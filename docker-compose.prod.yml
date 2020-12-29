@@ -1,0 +1,19 @@
+version: '2.4'
+services:
+  ib-gateway:
+    image: docker.io/omdv/ib-gateway:978
+    environment:
+      - VNC_PASSWORD=${TWS_VNC_PASSWORD}
+      - TRADING_MODE=${TWS_TRADING_MODE}
+      - TWSUSERID=${TWS_USER_ID}
+      - TWSPASSWORD=${TWS_PASSWORD}
+    restart: always
+    ports:
+    - 8888:80
+    - 4000:4000
+
+  ib-app:
+    image: gcr.io/ibkr-trading/ib-app:v001
+    restart: on-failure
+    depends_on:
+    - ib-gateway

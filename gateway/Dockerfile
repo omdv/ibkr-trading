@@ -2,7 +2,20 @@ FROM dorowu/ubuntu-desktop-lxde-vnc:focal
 
 LABEL maintainer="Oleg Medvedev <omdv.public@gmail.com>"
 
+# IBC version to use
 ARG IBCversion=3.8.3
+
+# default env
+ENV OPENBOX_ARGS='--startup "/opt/runscript.sh"'
+ENV TWS_MAJOR_VRSN=978
+ENV TZ=America/Chicago
+ENV IBC_INI=/root/ibc/config.ini
+ENV IBC_PATH=/opt/ibc
+ENV LOG_PATH=/root/ibc/Logs
+ENV JAVA_PATH=/opt/i4j_jres/1.8.0_152-tzdata2019c/bin
+ENV TWS_PATH=/root/Jts/
+ENV FIXUSERID=
+ENV FIXPASSWORD=
 
 RUN  apt-get update \
     && apt-get install -y wget unzip fail2ban socat
@@ -29,6 +42,7 @@ RUN rm -rf /opt/ibgateway
 # create folders and copy settings
 RUN mkdir /root/ibc
 COPY ./config.ini /root/ibc/config.ini
+COPY ./jts.ini /root/Jts/jts.ini
 
 # startup scripts
 COPY ./runscript.sh /opt/runscript.sh

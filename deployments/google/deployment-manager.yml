@@ -2,7 +2,7 @@ resources:
     - type: compute.v1.instance
       name: ibkr
       properties:
-        zone: us-central1-a
+        zone: us-central1-c
         machineType: zones/us-central1-a/machineTypes/e2-small
         disks:
         - deviceName: ibkr

@@ -2,22 +2,34 @@
 
 ## Usage
 
-Update `.env` file if needed. Create the following environment variables:
+Create the following environment variables:
 
-- $TWS_VNC_PASSWORD
-- $TWS_TRADING_MODE
-- $TWS_USER_ID
-- $TWS_PASSWORD
+- `$TWS_VNC_PASSWORD` with the password for VNC login. Leave blank for no password.
+- `$TWS_TRADING_MODE` for trading mode. Allowed values are `paper` or `live`.
+- `$TWS_USER_ID` and `$TWS_PASSWORD`.
 
-### Ports
+### Local test
 
-`dc -f docker-compose.ports.yml up -d --build`
-VNC via `docker-host:8888`, API via `docker-host:4000`
+Run `make test` to create a local docker compose deployment. Observe logs - the application should be able to connect to API and print out your account information.
+
+Access VNC via `http://[your-docker-host-ip]:8888` and API via `[your-docker-host-ip]:4000`.
+
+### Building docker images for production
+
+Run `make publish-all` to create production docker images. Define image tags in Makefile.
 
 ### Tailscale
 
 `dc -f docker-compose.tailscale.yml up -d --build`
 Enable magic DNS in tailscale console and setup one DNS server, e.g. 8.8.8.8. VNC via `tailscale-IP:80`, API via `tailscale-IP:4000`
+
+### Cloud deployments
+
+WIP on Terraform recipes for:
+
+- GCP (90% done)
+- AWS (not started)
+- Digital Ocean (not started)
 
 ## References
 

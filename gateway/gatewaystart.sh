@@ -166,12 +166,12 @@ APP=GATEWAY
 
 # Ensure we have settings for everything..
 TWS_MAJOR_VRSN=${TWS_MAJOR_VRSN:-978}
-IBC_INI=${IBC_INI:-"${HOME}/ibc/config.ini"}
+IBC_INI=${IBC_INI:-"/root/ibc/config.ini"}
 TRADING_MODE=${TRADING_MODE:-""}
 IBC_PATH=${IBC_PATH:-"/opt/ibc"}
-TWS_PATH=${TWS_PATH:-"${HOME}/Jts"}
+TWS_PATH=${TWS_PATH:-"/root/Jts"}
 TWS_SETTINGS_PATH=${TWS_SETTINGS_PATH:-""}
-LOG_PATH=${LOG_PATH:-"${HOME}/ibc/logs"}
+LOG_PATH=${LOG_PATH:-"/root/ibc/logs"}
 TWSUSERID=${TWSUSERID:-""}
 TWSPASSWORD=${TWSPASSWORD:-""}
 FIXUSERID=${FIXUSERID:-""}

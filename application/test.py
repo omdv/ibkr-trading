@@ -25,8 +25,11 @@ def main():
     ib_insync.util.sleep(30)
     ib_conn = connect_to_ib()
     ptf = ib_conn.portfolio()
+    
     assert type(ptf), list
     logging.info("Tests are OK!")
+    
+    ib_conn.disconnect()
 
 if __name__ == '__main__':
     main()
