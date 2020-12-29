@@ -12,12 +12,16 @@ ib_insync.util.logToConsole(level=log_level)
 def connect_to_ib():
     # Connect to market gateway
     ibinstance = ib_insync.IB()
-    ibinstance.connect(host=os.getenv('IB_GATEWAY_URLNAME', 'gateway'),
-                       port=int(os.getenv('IB_GATEWAY_URLPORT', '4000')),
+    trading_mode = os.getenv('TRADING_MODE', 'paper')
+    ib_port = 4042 if trading_mode == 'paper' else 4041
+
+    ibinstance.connect(host=os.getenv('IB_GATEWAY_HOST', 'ib-gateway'),
+                       port=ib_port,
                        clientId=int(os.getenv('EFP_CLIENT_ID', (5+random.randint(0, 4)))),
                        timeout=15,
                        readonly=True)
-    logging.info("Connected to IB")
+    logging.info("Connected to IB in {} mode.".format(trading_mode))
+
     ibinstance.reqMarketDataType(int(os.getenv('MKT_DATA_TYPE', '4')))
     return ibinstance
 
@@ -27,7 +31,7 @@ def main():
     ptf = ib_conn.portfolio()
     
     assert type(ptf), list
-    logging.info("Tests are OK!")
+    logging.info("Passed connection test.")
     
     ib_conn.disconnect()
 

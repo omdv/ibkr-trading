@@ -20,6 +20,8 @@ Run `make publish-all` to create production docker images. Define image tags in 
 
 ### Tailscale
 
+*Will likely abandon in favor of SSH port forwarding.*
+
 `dc -f docker-compose.tailscale.yml up -d --build`
 Enable magic DNS in tailscale console and setup one DNS server, e.g. 8.8.8.8. VNC via `tailscale-IP:80`, API via `tailscale-IP:4000`
 

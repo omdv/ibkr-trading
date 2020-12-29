@@ -42,7 +42,6 @@ RUN rm -rf /opt/ibgateway
 # create folders and copy settings
 RUN mkdir /root/ibc
 COPY ./config.ini /root/ibc/config.ini
-COPY ./jts.ini /root/Jts/jts.ini
 
 # startup scripts
 COPY ./runscript.sh /opt/runscript.sh
