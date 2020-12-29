@@ -1,7 +1,8 @@
 version: '2.4'
 services:
   ibgateway:
-    build: ./gateway/
+    # build: ./gateway/
+    image: docker.io/omdv/ib-gateway:978
     environment:
       - VNC_PASSWORD=${TWS_VNC_PASSWORD}
       - TRADING_MODE=${TWS_TRADING_MODE}
