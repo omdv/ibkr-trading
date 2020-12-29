@@ -1,0 +1,19 @@
+version: '2.4'
+services:
+  ibgateway:
+    build: ./gateway/
+    environment:
+      - VNC_PASSWORD=${TWS_VNC_PASSWORD}
+      - TRADING_MODE=${TWS_TRADING_MODE}
+      - TWSUSERID=${TWS_USER_ID}
+      - TWSPASSWORD=${TWS_PASSWORD}
+    restart: always
+    ports:
+    - 8888:80
+    - 4000:4000
+
+  application:
+    build: ./application/
+    restart: on-failure
+    depends_on:
+    - ibgateway
