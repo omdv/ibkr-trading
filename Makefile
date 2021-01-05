@@ -1,16 +1,18 @@
 # === SETUP ===
 PROJECT := ibkr-trading
 REPOSITORY := omdv/ibkr-trading
-GATEWAY_VERSION := 978
-APP_VERSION := v001
 
-GATEWAY_IMAGE := docker.io/omdv/ib-gateway:$(GATEWAY_VERSION)
-APP_IMAGE := gcr.io/ibkr-trading/ib-app:$(APP_VERSION)
+GATEWAY_IMAGE := docker.io/omdv/ib-gateway:latest
+APP_IMAGE := docker.io/omdv/ib-app:test
 
 # === DEVELOPMENT ===
 .PHONY: test
 test:
-	docker-compose -f docker-compose.dev.yml up -d --build
+	docker-compose up -d --build
+
+.PHONY: dev
+dev:
+	docker-compose up -d --build
 
 # === DOCKER ===
 .PHONY: build-gateway

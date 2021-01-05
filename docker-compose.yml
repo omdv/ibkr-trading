@@ -1,7 +1,6 @@
 version: '2.4'
 services:
   ib-gateway:
-    # image: docker.io/omdv/ib-gateway:978
     build: ./gateway
     environment:
       - VNC_PASSWORD=${TWS_VNC_PASSWORD}
@@ -11,7 +10,8 @@ services:
     restart: always
     ports:
     - 8888:80
-    - 4000:4000
+    - 4041:4041
+    - 4042:4042
 
   ib-app:
     build: ./application
