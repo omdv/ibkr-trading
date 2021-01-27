@@ -14,6 +14,16 @@ Run `make test` to create a local docker compose deployment. Observe logs - the 
 
 Access VNC via `http://[your-docker-host-ip]:8888` and API via `[your-docker-host-ip]:4000`.
 
+### Cloud development
+
+You can use one of official Jupyter notebook images:
+
+```bash
+export TF_VAR_app_image=docker.io/jupyter/minimal-notebook:latest
+```
+
+Note that it won't have persistent storage, so commit your changes before destroying the instance.
+
 ### Building docker images for production
 
 I will maintain two docker images:

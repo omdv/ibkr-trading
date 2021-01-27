@@ -54,6 +54,7 @@ resource "google_compute_instance" "ib-app" {
     scopes = [
       "https://www.googleapis.com/auth/compute",
       "https://www.googleapis.com/auth/devstorage.read_write",
+      "https://www.googleapis.com/auth/datastore",
       "logging-write",
       "monitoring-write"
     ]

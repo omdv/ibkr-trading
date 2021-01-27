@@ -17,7 +17,7 @@ def connect_to_ib():
 
     ibinstance.connect(host=os.getenv('IB_GATEWAY_HOST', 'ib-gateway'),
                        port=ib_port,
-                       clientId=int(os.getenv('EFP_CLIENT_ID', (5+random.randint(0, 4)))),
+                       clientId=int(os.getenv('CLIENT_ID', (5+random.randint(0, 4)))),
                        timeout=15,
                        readonly=True)
     logging.info("Connected to IB in {} mode.".format(trading_mode))

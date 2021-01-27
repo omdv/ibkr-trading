@@ -3,11 +3,29 @@ provider "google" {
   zone    = var.zone
 }
 
+resource "google_project_service" "run" {
+  service = "run.googleapis.com"
+}
+
+resource "google_project_service" "registry" {
+  service = "containerregistry.googleapis.com"
+}
+
+resource "google_app_engine_application" "app" {
+  project     = var.project_id
+  location_id = var.app-engine-location
+}
+
 resource "google_compute_network" "default" {
   name                    = var.network
   routing_mode            = "REGIONAL"
   auto_create_subnetworks = false
   mtu                     = 1500
+
+  depends_on = [
+    google_project_service.run,
+    google_project_service.registry,
+  ]
 }
 
 resource "google_compute_subnetwork" "default" {

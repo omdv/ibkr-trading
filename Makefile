@@ -3,7 +3,8 @@ PROJECT := ibkr-trading
 REPOSITORY := omdv/ibkr-trading
 
 GATEWAY_IMAGE := docker.io/omdv/ib-gateway:latest
-APP_IMAGE := docker.io/omdv/ib-app:test
+APP_IMAGE := docker.io/omdv/ib-app:gcp
+APP_FOLDER := ./application-gcp
 
 # === DEVELOPMENT ===
 .PHONY: test
@@ -23,11 +24,11 @@ build-gateway:
 publish-gateway:
 	docker push $(GATEWAY_IMAGE)
 
-.PHONY: build-app
+.PHONY: build-app-test
 build-app:
-	docker build -t $(APP_IMAGE) ./application
+	docker build -t $(APP_IMAGE) $(APP_FOLDER)
 
-.PHONY: publish-app
+.PHONY: publish-app-test
 publish-app:
 	docker push $(APP_IMAGE)
 	

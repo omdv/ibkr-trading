@@ -35,6 +35,12 @@ variable "zone" {
   default     = "us-central1-c"
 }
 
+variable "app-engine-location" {
+  description = "Location for App Engine to serve from"
+  type        = string
+  default     = "us-central"
+}
+
 variable "gateway_vm_name" {
   description = "Instance name for gateway"
   type        = string
