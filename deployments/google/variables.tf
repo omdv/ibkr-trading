@@ -56,7 +56,7 @@ variable "app_vm_name" {
 variable "gateway_machine_type" {
   description = "GCE machine type for gateway"
   type        = string
-  default     = "e2-micro"
+  default     = "e2-small"
 }
 
 variable "app_machine_type" {

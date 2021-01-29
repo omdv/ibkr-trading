@@ -9,10 +9,13 @@ import time
 import py_vollib
 import py_vollib_vectorized
 
-from google.cloud import datastore
+from google.cloud import firestore
 
 logger = logging.getLogger(__name__)
 ib_insync.util.logToConsole(level=logging.WARNING)
+
+class NegativePrice(Exception):
+    pass
 
 class Bot():
     def __init__(self, config):
@@ -31,33 +34,37 @@ class Bot():
         logging.info("Connected to IB on {}:{} mode.".format(host,port))
 
         self.ib.reqMarketDataType(config['MKT_DATA_TYPE'])
-
-        self.datastore_client = datastore.Client()
         
         self.ptf = []
         self.options = []
         self.ptf_stats = {}
         self.pos_stats = {}
 
-        # attempt to fix "competing live sessions"...
-        time.sleep(2)
-
     
     def __del__(self):
         self.ib.disconnect()
+
+
+    def price_getter(self, obj):
+        """
+        Consistent price getter from ib_insync Ticker object
+        """
+        if obj.bid == -1.0 or obj.ask == -1.0:
+            price = obj.close
+        else:
+            price = (obj.bid + obj.ask)/2.0
         
-    
+        if price < 0:
+            logging.warning("Negative price at {}".format(obj))
+            raise NegativePrice
+        return price
+
+
     def get_state(self):
         """
-        Get state
+        Handle interactions with API and raise related exceptions here
         """
         self.ptf = self.ib.portfolio()
-            
-    
-    def process_options(self):
-        """
-        Parse options positions in the portfolio
-        """
         self.options = [p.contract for p in self.ptf if p.contract.secType == 'OPT']
         self.options = self.ib.qualifyContracts(*self.options)
         self.tickers = self.ib.reqTickers(*self.options)
@@ -77,17 +84,27 @@ class Bot():
             ib_insync.util.df(self.tickers),
             df_under
         ], axis=1)
-  
-        # greeks with pyvollib_vectorized
+
+        df['option_price'] = df.apply(self.price_getter, axis=1)
+        
+        self.options = df
+
+
+    def process_options(self):
+        """
+        Parse options positions in the portfolio and get greeks
+        TODO: Add checks
+        """
+        df = self.options
+
         df['risk_free_rate'] = self.config['INTEREST_RATE']
         df['right'] = df['right'].str.lower()
-        df['option_price'] = df.apply(self.price_getter, axis=1)
         
         # get time to expiration in years
         expiration = pd.to_datetime(df['lastTradeDateOrContractMonth'] + 'T16:00:00',
                                     errors='raise').dt.tz_localize(tz='US/Eastern')
         df['dte'] = (expiration - dt.datetime.now(tz=pytz.timezone('US/Eastern'))) / pd.Timedelta('365 days')
-        
+
         py_vollib_vectorized.price_dataframe(
             df,
             flag_col='right',
@@ -115,7 +132,7 @@ class Bot():
         
         self.options = df
 
-    
+
     def portfolio_stats(self):
         """
         Calculate portfolio stats
@@ -132,6 +149,7 @@ class Bot():
 
         self.ptf_stats['theta'] = ptf_theta
         self.ptf_stats['delta'] = ptf_delta
+        self.ptf_stats['timestamp'] = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         
 
     def position_stats(self):
@@ -139,46 +157,44 @@ class Bot():
         Determine position stats
         """
         df = self.options
-        self.pos_stats = pd.pivot_table(
+        self.pos_stats['data'] = pd.pivot_table(
             df[df.secType == 'OPT'],
             values=['delta', 'theta', 'gamma', 'vega'],
             index=['symbol'],
-            aggfunc='sum')
-        
-        
-    def price_getter(self, obj):
-        """
-        Consistent price getter from ib_insync Ticker object
-        """
-        if obj.bid == -1.0 or obj.ask == -1.0:
-            price = obj.close
-        else:
-            price = (obj.bid + obj.ask)/2.0
-        assert (price >= 0), "Negative price"
-        return price
-        
+            aggfunc='sum').to_dict()
+        self.pos_stats['timestamp'] = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
-    def save_state_to_datastore(self):
-        """
-        Save selected properties to datastore
-        """
-        
-        key = self.datastore_client.key("Portfolio", "stats")
-        entity = datastore.Entity(key=complete_key)
-        entity.update(self.ptf_stats)
-        self.datastore_client.put(entity)
 
-    
+    def save_state_to_firestore(self):
+        """
+        Save selected properties to firestore
+        """
+        client = firestore.Client()
+        
+        doc = client.collection(self.config['FIRESTORE_COLLECTION']).document(u'ptf_stats')
+        doc.set(self.ptf_stats)
+
+        doc = client.collection(self.config['FIRESTORE_COLLECTION']).document(u'pos_stats')
+        doc.set(self.pos_stats)
+
+
     def run(self):
         """
-        Routine to decide on the trade action
+        Run loop
         """
-        self.get_state()
-        self.process_options()
-        self.portfolio_stats()
-        self.position_stats()
-        self.save_state_to_datastore()
-        
+        while True:
+            try:
+                self.get_state()
+            except NegativePrice:
+                time.sleep(10)
+                break
+
+            self.process_options()
+            self.portfolio_stats()
+            self.position_stats()
+            self.save_state_to_firestore()
+            time.sleep(self.config['DELAY'])
+
 
 if __name__ == "__main__":
     config = {
@@ -187,8 +203,10 @@ if __name__ == "__main__":
         'IB_GATEWAY_PORT': os.getenv('IB_GATEWAY_PORT', 4001),
         'CLIENT_ID': os.getenv('CLIENT_ID', 1010),
         'MKT_DATA_TYPE': os.getenv('MKT_DATA_TYPE', 4),
-        'INTEREST_RATE': 0.0025
+        'INTEREST_RATE': 0.0025,
+        'FIRESTORE_COLLECTION': 'options',
+        'DELAY': 60
     }
-    
+
     bot = Bot(config)
     bot.run()

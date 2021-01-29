@@ -55,7 +55,9 @@ export TF_VAR_VNC_PASSWORD = <pass to access VNC, can leave blank, it is not exp
 export TF_VAR_project_id = <your-GCP-project-id>
 ```
 
-Then review and deploy Terraform plan:
+If you don't want to see default test application pick your desired image: `export TF_VAR_app_image=...`
+
+Review and deploy Terraform plan:
 
 ```bash
 cd ./deployments/google
@@ -64,10 +66,14 @@ terraform plan
 terraform apply
 ```
 
-Forward VNC port: `gcloud compute ssh ib-gateway -- -v -L 8888:localhost:80`.
-Or connect to application instance and check docker logs.
+Once deployed in a few minutes you should start seeing entities in Firestore.
+
+##### Troubleshooting
+
+- Forward VNC port: `gcloud compute ssh ib-gateway -- -v -L 8888:localhost:80`.
+- Or connect to application instance and check docker logs.
+- You cannot delete AppEngine once created, but you can import it into terraform plan: `terraform import google_app_engine_application.app $TF_VAR_project_id`
 
 ## References
 
-- [Tailscale and docker](https://rnorth.org/tailscale-docker/)
 - [IBC and TWS on ubuntu](https://dimon.ca/how-to-setup-ibc-and-tws-on-headless-ubuntu-in-10-minutes)
