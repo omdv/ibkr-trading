@@ -11,9 +11,9 @@ module "ib-app" {
         value = var.ib-gateway-internal-ip
       },
       {
-        name  = "TRADING_MODE"
-        value = var.TRADING_MODE
-      },
+        name  = "IB_GATEWAY_PORT"
+        value = var.ib-gateway-port
+      }
     ]
   }
   restart_policy = "Always"
@@ -40,8 +40,8 @@ resource "google_compute_instance" "ib-app" {
 
   metadata = {
     gce-container-declaration = module.ib-app.metadata_value
-    google-logging-enabled    = var.logging_enabled
-    google-monitoring-enabled = var.monitoring_enabled
+    google-logging-enabled    = var.app_logging_enabled
+    google-monitoring-enabled = var.app_monitoring_enabled
   }
 
   labels = {

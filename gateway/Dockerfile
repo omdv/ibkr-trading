@@ -1,24 +1,14 @@
-FROM dorowu/ubuntu-desktop-lxde-vnc:focal
+FROM ubuntu:focal
 
 LABEL maintainer="Oleg Medvedev <omdv.public@gmail.com>"
 
 # IBC version to use
-ARG IBCversion=3.8.3
-
-# default env
-ENV OPENBOX_ARGS='--startup "/opt/runscript.sh"'
-ENV TWS_MAJOR_VRSN=978
-ENV TZ=America/Chicago
-ENV IBC_INI=/root/ibc/config.ini
-ENV IBC_PATH=/opt/ibc
-ENV LOG_PATH=/root/ibc/Logs
-ENV JAVA_PATH=/opt/i4j_jres/1.8.0_152-tzdata2019c/bin
-ENV TWS_PATH=/root/Jts/
-ENV FIXUSERID=
-ENV FIXPASSWORD=
+ARG IBCversion=3.8.4-beta.2
+ARG IBGateway_version=978
 
 RUN  apt-get update \
-    && apt-get install -y wget unzip fail2ban socat
+    && apt-get install -y wget unzip fail2ban socat cron supervisor xvfb \
+    && apt-get install -y libxtst6 libxrender1 libxi6
 
 # install IBC
 RUN mkdir /opt/ibc
@@ -43,6 +33,22 @@ RUN rm -rf /opt/ibgateway
 RUN mkdir /root/ibc
 COPY ./config.ini /root/ibc/config.ini
 
-# startup scripts
-COPY ./runscript.sh /opt/runscript.sh
-RUN chmod +x /opt/runscript.sh
+# Overwrite vmoptions file
+RUN rm -f /root/Jts/ibgateway/${IBGateway_version}}/ibgateway.vmoptions
+COPY ./ibgateway.vmoptions /root/Jts/ibgateway/${IBGateway_version}}/ibgateway.vmoptions
+
+# default env
+ENV TWS_MAJOR_VRSN=${IBGateway_version}
+ENV TZ=America/Chicago
+ENV IBC_INI=/root/ibc/config.ini
+ENV IBC_PATH=/opt/ibc
+ENV LOG_PATH=/root/ibc/Logs
+ENV JAVA_PATH=/opt/i4j_jres/1.8.0_152-tzdata2019c/bin
+ENV TWS_PATH=/root/Jts/
+ENV FIXUSERID=
+ENV FIXPASSWORD=
+ENV DISPLAY :0
+
+# supervisor
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+CMD ["/usr/bin/supervisord"]

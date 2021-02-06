@@ -7,10 +7,6 @@ module "ib-gateway" {
     tty   = true
     env = [
       {
-        name  = "VNC_PASSWORD"
-        value = var.VNC_PASSWORD
-      },
-      {
         name  = "TRADING_MODE"
         value = var.TRADING_MODE
       },
@@ -21,7 +17,7 @@ module "ib-gateway" {
       {
         name  = "TWSUSERID"
         value = var.TWS_USER_ID
-      },
+      }
     ]
   }
   restart_policy = "Always"
@@ -61,8 +57,8 @@ resource "google_compute_instance" "ib-gateway" {
 
   metadata = {
     gce-container-declaration = module.ib-gateway.metadata_value
-    google-logging-enabled    = var.logging_enabled
-    google-monitoring-enabled = var.monitoring_enabled
+    google-logging-enabled    = var.gateway_logging_enabled
+    google-monitoring-enabled = var.gateway_monitoring_enabled
   }
 
   labels = {

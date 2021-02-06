@@ -3,21 +3,20 @@ services:
   ib-gateway:
     build: ./gateway
     environment:
-      - VNC_PASSWORD=${TWS_VNC_PASSWORD}
       - TWSUSERID=${TWS_USER_ID_LIVE}
       - TWSPASSWORD=${TWS_PASSWORD_LIVE}
       - TRADING_MODE=live
     restart: always
     ports:
     - 8888:80
-    - 4041:4041 #live
-    - 4042:4042 #paper
+    - 4041:4041
+    - 4042:4042
 
   ib-app:
     build: ./application-gcp
     environment:
       - IB_GATEWAY_HOST=ib-gateway
-      - IB_GATEWAY_PORT=4042
+      - IB_GATEWAY_PORT=4041
     restart: on-failure
     depends_on:
     - ib-gateway

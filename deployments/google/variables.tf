@@ -11,6 +11,7 @@ variable "TWS_PASSWORD" {
 variable "VNC_PASSWORD" {
   description = "VNC password"
   type        = string
+  default     = ""
 }
 
 variable "TRADING_MODE" {
@@ -68,13 +69,11 @@ variable "app_machine_type" {
 variable "gateway_image" {
   description = "Link to gateway docker image"
   type        = string
-  default     = "docker.io/omdv/ib-gateway:latest"
 }
 
 variable "app_image" {
   description = "Link to app docker image"
   type        = string
-  default     = "docker.io/omdv/ib-app:test"
 }
 
 variable "network" {
@@ -101,13 +100,30 @@ variable "ib-gateway-internal-ip" {
   default     = "10.0.0.10"
 }
 
-variable "logging_enabled" {
+variable "ib-gateway-port" {
+  description = "Gateway API port"
+  type        = number
+}
+
+variable "gateway_logging_enabled" {
+  description = "If true need at least e2-small instance"
+  type        = string
+  default     = "true"
+}
+
+variable "gateway_monitoring_enabled" {
+  description = "If true need at least e2-small instance"
+  type        = string
+  default     = "true"
+}
+
+variable "app_logging_enabled" {
   description = "If true need at least e2-small instance"
   type        = string
   default     = "false"
 }
 
-variable "monitoring_enabled" {
+variable "app_monitoring_enabled" {
   description = "If true need at least e2-small instance"
   type        = string
   default     = "false"

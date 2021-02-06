@@ -1,0 +1,36 @@
+#
+# This file contains VM parameters for IB Gateway 978.
+# Each parameter should be defined in a separate line and the
+# last line must be followed by a line feed. No leading or
+# trailing whitespaces are allowed in the same line, where a
+# parameter is defined.
+#
+# Lines starting with a '#' character are treated as comments
+# and ignored. Additionally, if a line contains a
+# '### keep on update' string, all parameters defined below will
+# be preserved on update.
+#
+
+### keep on update
+
+# See all Java flags with /opt/i4j_jres/1.8.0_152/bin/java -XX:+PrintFlagsFinal -version
+
+# GC settings
+-XX:+UseG1GC
+-XX:MaxGCPauseMillis=500
+-XX:ParallelGCThreads=20
+-XX:ConcGCThreads=4
+-XX:InitiatingHeapOccupancyPercent=45
+-XX:+UseStringDeduplication
+-XX:MaxRAM=2048M
+-XX:MinRAMFraction=4
+-XX:MaxRAMFraction=2
+-XX:+ExitOnOutOfMemoryError
+
+
+-Dinstaller.uuid=ffa5c054-0b73-4c18-b588-1933a1a85d4f
+-DvmOptionsPath=/root/Jts/ibgateway/978/ibgateway.vmoptions
+-Dsun.awt.nopixfmt=true
+-Dsun.java2d.noddraw=true
+-Dswing.boldMetal=false
+-Dsun.locale.formatasdefault=true

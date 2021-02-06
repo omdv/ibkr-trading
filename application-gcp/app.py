@@ -20,29 +20,39 @@ class NegativePrice(Exception):
 class Bot():
     def __init__(self, config):
         self.config = config
-        
-        host = config['IB_GATEWAY_HOST']
-        port = config['IB_GATEWAY_PORT']
 
-        self.ib = ib_insync.IB()
-        self.ib.connect(
-            host = host,
-            port = port,
-            clientId = config['CLIENT_ID'],
-            timeout = 15,
-            readonly = True)
-        logging.info("Connected to IB on {}:{} mode.".format(host,port))
-
-        self.ib.reqMarketDataType(config['MKT_DATA_TYPE'])
-        
         self.ptf = []
         self.options = []
         self.ptf_stats = {}
         self.pos_stats = {}
 
+        self.tz = pytz.timezone('US/Eastern')
+        self.tfmt = "%Y-%m-%dT%H:%M:%S%z"
+
     
     def __del__(self):
-        self.ib.disconnect()
+        try:
+            self.ib.disconnect()
+        except AttributeError:
+            pass
+
+
+    def connect_to_gateway(self):
+        """
+        Create and connect IB client
+        """
+        host = self.config['IB_GATEWAY_HOST']
+        port = self.config['IB_GATEWAY_PORT']
+
+        self.ib = ib_insync.IB()
+        self.ib.connect(
+            host = host,
+            port = port,
+            clientId = self.config['CLIENT_ID'],
+            timeout = 15,
+            readonly = True)
+        logging.info("Connected to IB on {}:{}.".format(host,port))
+        self.ib.reqMarketDataType(config['MKT_DATA_TYPE'])
 
 
     def price_getter(self, obj):
@@ -64,6 +74,8 @@ class Bot():
         """
         Handle interactions with API and raise related exceptions here
         """
+        self.connect_to_gateway()
+
         self.ptf = self.ib.portfolio()
         self.options = [p.contract for p in self.ptf if p.contract.secType == 'OPT']
         self.options = self.ib.qualifyContracts(*self.options)
@@ -88,6 +100,7 @@ class Bot():
         df['option_price'] = df.apply(self.price_getter, axis=1)
         
         self.options = df
+        self.ib.disconnect()
 
 
     def process_options(self):
@@ -102,8 +115,8 @@ class Bot():
         
         # get time to expiration in years
         expiration = pd.to_datetime(df['lastTradeDateOrContractMonth'] + 'T16:00:00',
-                                    errors='raise').dt.tz_localize(tz='US/Eastern')
-        df['dte'] = (expiration - dt.datetime.now(tz=pytz.timezone('US/Eastern'))) / pd.Timedelta('365 days')
+                                    errors='raise').dt.tz_localize(tz=self.tz)
+        df['dte'] = (expiration - dt.datetime.now(tz=self.tz)) / pd.Timedelta('365 days')
 
         py_vollib_vectorized.price_dataframe(
             df,
@@ -149,7 +162,7 @@ class Bot():
 
         self.ptf_stats['theta'] = ptf_theta
         self.ptf_stats['delta'] = ptf_delta
-        self.ptf_stats['timestamp'] = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        self.ptf_stats['timestamp'] = dt.datetime.now(tz=self.tz).strftime(self.tfmt)
         
 
     def position_stats(self):
@@ -162,7 +175,7 @@ class Bot():
             values=['delta', 'theta', 'gamma', 'vega'],
             index=['symbol'],
             aggfunc='sum').to_dict()
-        self.pos_stats['timestamp'] = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        self.pos_stats['timestamp'] = dt.datetime.now(tz=self.tz).strftime(self.tfmt)
 
 
     def save_state_to_firestore(self):
@@ -192,7 +205,11 @@ class Bot():
             self.process_options()
             self.portfolio_stats()
             self.position_stats()
-            self.save_state_to_firestore()
+            try:
+                self.save_state_to_firestore()
+            except:
+                logger.warning("Can't save to firestore")
+                logger.warning(self.options)
             time.sleep(self.config['DELAY'])
 
 
@@ -205,7 +222,7 @@ if __name__ == "__main__":
         'MKT_DATA_TYPE': os.getenv('MKT_DATA_TYPE', 4),
         'INTEREST_RATE': 0.0025,
         'FIRESTORE_COLLECTION': 'options',
-        'DELAY': 60
+        'DELAY': 120
     }
 
     bot = Bot(config)

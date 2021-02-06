@@ -76,4 +76,7 @@ Once deployed in a few minutes you should start seeing entities in Firestore.
 
 ## References
 
+Inspired by the following projects:
+
 - [IBC and TWS on ubuntu](https://dimon.ca/how-to-setup-ibc-and-tws-on-headless-ubuntu-in-10-minutes)
+- [IBGateway docker image for GCP](https://github.com/dvasdekis/ib-gateway-docker-gcp/blob/v978/supervisord.conf)
