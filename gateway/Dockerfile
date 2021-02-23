@@ -8,7 +8,8 @@ ARG IBGateway_version=978
 
 RUN  apt-get update \
     && apt-get install -y wget unzip fail2ban socat cron supervisor xvfb \
-    && apt-get install -y libxtst6 libxrender1 libxi6
+    && apt-get install -y libxtst6 libxrender1 libxi6 \
+    && apt-get install tini -y
 
 # install IBC
 RUN mkdir /opt/ibc
@@ -34,8 +35,8 @@ RUN mkdir /root/ibc
 COPY ./config.ini /root/ibc/config.ini
 
 # Overwrite vmoptions file
-RUN rm -f /root/Jts/ibgateway/${IBGateway_version}}/ibgateway.vmoptions
-COPY ./ibgateway.vmoptions /root/Jts/ibgateway/${IBGateway_version}}/ibgateway.vmoptions
+RUN rm -f /root/Jts/ibgateway/${IBGateway_version}/ibgateway.vmoptions
+COPY ./ibgateway.vmoptions /root/Jts/ibgateway/${IBGateway_version}/ibgateway.vmoptions
 
 # default env
 ENV TWS_MAJOR_VRSN=${IBGateway_version}
@@ -49,6 +50,11 @@ ENV FIXUSERID=
 ENV FIXPASSWORD=
 ENV DISPLAY :0
 
-# supervisor
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# healthcheck - if gateway not running kill the container
+HEALTHCHECK --start-period=30s --timeout=5s --interval=10s --retries=2 CMD bash -c 'pidof java || kill 1' || exit 1
+
+# tini entrypoint to be able to `kill 1`
+ENTRYPOINT ["tini", "--"]
 CMD ["/usr/bin/supervisord"]

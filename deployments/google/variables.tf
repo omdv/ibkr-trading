@@ -101,20 +101,20 @@ variable "ib-gateway-internal-ip" {
 }
 
 variable "ib-gateway-port" {
-  description = "Gateway API port"
+  description = "Gateway API port: 4041 (live) or 4042 (paper)"
   type        = number
 }
 
 variable "gateway_logging_enabled" {
   description = "If true need at least e2-small instance"
   type        = string
-  default     = "true"
+  default     = "false"
 }
 
 variable "gateway_monitoring_enabled" {
   description = "If true need at least e2-small instance"
   type        = string
-  default     = "true"
+  default     = "false"
 }
 
 variable "app_logging_enabled" {

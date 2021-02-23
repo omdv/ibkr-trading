@@ -1,9 +1,9 @@
-FROM python:3
+FROM python:3.7
 
 LABEL maintainer="Oleg Medvedev <omdv.public@gmail.com>"
 
 ENV IB_GATEWAY_HOST=ib-gateway
-ENV TRADING_MODE=paper
+ENV IB_GATEWAY_PORT=4041
 ENV CONDA_VERSION 4.7.12
 ENV CONDA_HASH 79510c6e7bd9e012856e25dcb21b3e093aa4ac8113d9aa7e82a86987eabe1c31
 
@@ -25,11 +25,8 @@ RUN conda update -y conda pip && \
 RUN conda install -y -c conda-forge \
     jupyterlab=2.1.0
 
+COPY requirements.txt /tmp/
+RUN pip install -r /tmp/requirements.txt
+COPY ./app.py /tmp/
+
 CMD ["jupyter","lab"]
-
-# CMD ["python","/tmp/test.py"]
-
-# COPY requirements.txt /tmp/
-# RUN pip install -r /tmp/requirements.txt
-# COPY ./test.py /tmp/
-# CMD ["python","/tmp/test.py"]

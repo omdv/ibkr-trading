@@ -12,7 +12,6 @@ import py_vollib_vectorized
 from google.cloud import firestore
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.WARNING)
 ib_insync.util.logToConsole(level=logging.WARNING)
 
 class NegativePrice(Exception):
@@ -52,8 +51,8 @@ class Bot():
             clientId = self.config['CLIENT_ID'],
             timeout = 15,
             readonly = True)
-        logger.debug("Connected to IB on {}:{}.".format(host,port))
-        self.ib.reqMarketDataType(self.config['MKT_DATA_TYPE'])
+        logging.info("Connected to IB on {}:{}.".format(host,port))
+        self.ib.reqMarketDataType(config['MKT_DATA_TYPE'])
 
 
     def price_getter(self, obj):
@@ -65,8 +64,8 @@ class Bot():
         else:
             price = (obj.bid + obj.ask)/2.0
         
-        if price < 0 or np.isnan(price):
-            logger.debug("No price at {}".format(obj))
+        if price < 0:
+            logging.warning("Negative price at {}".format(obj))
             raise NegativePrice
         return price
 
@@ -110,8 +109,6 @@ class Bot():
         TODO: Add checks
         """
         df = self.options
-        logger.debug(df.info())
-        logger.debug(df[['contract', 'price_und']])
 
         df['risk_free_rate'] = self.config['INTEREST_RATE']
         df['right'] = df['right'].str.lower()
@@ -145,9 +142,7 @@ class Bot():
         df['vega'] = df['vega'] * np.sign(df['position'])
         df['gamma'] = df['gamma'] * np.sign(df['position'])
         df['rho'] = df['rho'] * np.sign(df['position'])
-
-        logger.debug(df[['contract', 'delta']])
-
+        
         self.options = df
 
 
@@ -207,22 +202,17 @@ class Bot():
             try:
                 self.get_state()
             except NegativePrice:
-                logger.warning("Skipping cycle due to NaN price")
-                time.sleep(self.config['DELAY'])
-                break
-            except ConnectionRefusedError:
-                logger.warning("Connection failed")
+                time.sleep(10)
                 break
 
             self.process_options()
             self.portfolio_stats()
             self.position_stats()
-            
             try:
                 self.save_state_to_firestore()
             except:
-                logger.warning("Cannot save to Firestore")
-            
+                logger.warning("Can't save to firestore")
+                logger.warning(self.options)
             time.sleep(self.config['DELAY'])
 
 

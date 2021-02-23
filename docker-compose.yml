@@ -13,7 +13,7 @@ services:
     - 4042:4042
 
   ib-app:
-    build: ./application-gcp
+    build: ./application-dev
     environment:
       - IB_GATEWAY_HOST=ib-gateway
       - IB_GATEWAY_PORT=4041

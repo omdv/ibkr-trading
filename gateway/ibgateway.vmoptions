@@ -11,26 +11,22 @@
 # be preserved on update.
 #
 
-### keep on update
-
 # See all Java flags with /opt/i4j_jres/1.8.0_152/bin/java -XX:+PrintFlagsFinal -version
 
-# GC settings
+-Dinstaller.uuid=30e5165d-48a8-4bd7-9566-f639f502b3c7
+-DvmOptionsPath=/root/Jts/ibgateway/978/ibgateway.vmoptions
+-Dsun.awt.nopixfmt=true
+-Dsun.java2d.noddraw=true
+-Dswing.boldMetal=false
+-Dsun.locale.formatasdefault=true
+
+### keep on update
 -XX:+UseG1GC
 -XX:MaxGCPauseMillis=500
 -XX:ParallelGCThreads=20
 -XX:ConcGCThreads=4
 -XX:InitiatingHeapOccupancyPercent=45
 -XX:+UseStringDeduplication
--XX:MaxRAM=2048M
 -XX:MinRAMFraction=4
 -XX:MaxRAMFraction=2
 -XX:+ExitOnOutOfMemoryError
-
-
--Dinstaller.uuid=ffa5c054-0b73-4c18-b588-1933a1a85d4f
--DvmOptionsPath=/root/Jts/ibgateway/978/ibgateway.vmoptions
--Dsun.awt.nopixfmt=true
--Dsun.java2d.noddraw=true
--Dswing.boldMetal=false
--Dsun.locale.formatasdefault=true
