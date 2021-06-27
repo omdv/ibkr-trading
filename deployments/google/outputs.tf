@@ -1,3 +1,13 @@
+output "project_name" {
+  description = "Project name"
+  value = var.project_name
+}
+
+output "project_id" {
+  description = "Project ID"
+  value = google_project.project.project_id
+}
+
 output "gateway_name" {
   description = "Gateway instance name"
   value       = var.gateway_vm_name

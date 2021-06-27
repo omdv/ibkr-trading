@@ -4,7 +4,7 @@ LABEL maintainer="Oleg Medvedev <omdv.public@gmail.com>"
 
 # IBC version to use
 ARG IBCversion=3.8.4-beta.2
-ARG IBGateway_version=978
+ARG IBGateway_version=981
 
 RUN  apt-get update \
     && apt-get install -y wget unzip fail2ban socat cron supervisor xvfb \
@@ -27,7 +27,7 @@ RUN mkdir /opt/ibgateway
 WORKDIR /opt/ibgateway
 RUN wget https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh
 RUN chmod -R u+x *.sh
-RUN yes n | /opt/ibgateway/ibgateway-stable-standalone-linux-x64.sh
+RUN (printf "/root/Jts/ibgateway/${IBGateway_version}\nn" && cat) | /opt/ibgateway/ibgateway-stable-standalone-linux-x64.sh
 RUN rm -rf /opt/ibgateway
 
 # create folders and copy settings

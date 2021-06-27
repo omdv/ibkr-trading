@@ -1,16 +1,17 @@
 resource "google_compute_network" "default" {
+  project                 = google_project.project.project_id
   name                    = var.network
   routing_mode            = "REGIONAL"
   auto_create_subnetworks = false
   mtu                     = 1500
 
   depends_on = [
-    google_project_service.run,
-    google_project_service.registry,
+    google_project_service.gcp_services,
   ]
 }
 
 resource "google_compute_subnetwork" "default" {
+  project                  = google_project.project.project_id
   name                     = var.subnetwork
   ip_cidr_range            = var.subnet_cidr
   private_ip_google_access = true
@@ -22,24 +23,26 @@ resource "google_compute_subnetwork" "default" {
   ]
 }
 
-# resource "google_compute_firewall" "allow-ssh" {
-#   name      = "${var.network}-ssh"
-#   network   = var.network
-#   direction = "INGRESS"
+resource "google_compute_firewall" "allow-ssh" {
+  project   = google_project.project.project_id
+  name      = "${var.network}-ssh"
+  network   = var.network
+  direction = "INGRESS"
 
-#   allow {
-#     protocol = "tcp"
-#     ports    = ["22"]
-#   }
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
 
-#   target_tags = [var.project_id]
+  target_tags = [var.project_name]
 
-#   depends_on = [
-#     google_compute_network.default,
-#   ]
-# }
+  depends_on = [
+    google_compute_network.default,
+  ]
+}
 
 resource "google_compute_firewall" "allow-api" {
+  project = google_project.project.project_id
   name    = "${var.network}-api"
   network = var.network
 

@@ -24,10 +24,11 @@ module "ib-gateway" {
 }
 
 resource "google_compute_address" "ib-gateway-internal-ip" {
+  project      = google_project.project.project_id
   name         = "ib-gateway-internal-address"
   subnetwork   = var.subnetwork
   address_type = "INTERNAL"
-  address      = var.ib-gateway-internal-ip
+  address      = var.ib_gateway_internal_ip
   region       = var.region
   purpose      = "GCE_ENDPOINT"
   depends_on = [
@@ -36,7 +37,7 @@ resource "google_compute_address" "ib-gateway-internal-ip" {
 }
 
 resource "google_compute_instance" "ib-gateway" {
-  project                   = var.project_id
+  project                   = google_project.project.project_id
   machine_type              = var.gateway_machine_type
   zone                      = var.zone
   name                      = var.gateway_vm_name
@@ -49,9 +50,9 @@ resource "google_compute_instance" "ib-gateway" {
   }
 
   network_interface {
-    network    = var.network
-    subnetwork = var.subnetwork
-    network_ip = var.ib-gateway-internal-ip
+    network    = google_compute_network.default.id
+    subnetwork = google_compute_subnetwork.default.id
+    network_ip = var.ib_gateway_internal_ip
     access_config {}
   }
 
@@ -65,7 +66,7 @@ resource "google_compute_instance" "ib-gateway" {
     container-vm = module.ib-gateway.vm_container_label
   }
 
-  tags = [var.project_id, var.gateway_vm_name]
+  tags = [var.project_name, var.gateway_vm_name]
 
   service_account {
     scopes = [

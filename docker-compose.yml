@@ -3,17 +3,16 @@ services:
   ib-gateway:
     build: ./gateway
     environment:
-      - TWSUSERID=${TWS_USER_ID_LIVE}
-      - TWSPASSWORD=${TWS_PASSWORD_LIVE}
-      - TRADING_MODE=live
+      - TWSUSERID=${TWS_USER_ID}
+      - TWSPASSWORD=${TWS_PASSWORD}
+      - TRADING_MODE=${TWS_TRADING_MODE}
     restart: always
     ports:
-    - 8888:80
     - 4041:4041
     - 4042:4042
 
   ib-app:
-    build: ./application-dev
+    build: ./downloader
     environment:
       - IB_GATEWAY_HOST=ib-gateway
       - IB_GATEWAY_PORT=4041

@@ -8,11 +8,19 @@ module "ib-app" {
     env = [
       {
         name  = "IB_GATEWAY_HOST"
-        value = var.ib-gateway-internal-ip
+        value = var.ib_gateway_internal_ip
       },
       {
         name  = "IB_GATEWAY_PORT"
-        value = var.ib-gateway-port
+        value = var.ib_gateway_port
+      },
+      {
+        name  = "GCS_BUCKET_NAME"
+        value = google_storage_bucket.data.name
+      },
+      {
+        name = "STORAGE_BACKEND"
+        value = "gcs"
       }
     ]
   }
@@ -20,7 +28,7 @@ module "ib-app" {
 }
 
 resource "google_compute_instance" "ib-app" {
-  project                   = var.project_id
+  project                   = google_project.project.project_id
   machine_type              = var.app_machine_type
   zone                      = var.zone
   name                      = var.app_vm_name
@@ -33,8 +41,8 @@ resource "google_compute_instance" "ib-app" {
   }
 
   network_interface {
-    network    = var.network
-    subnetwork = var.subnetwork
+    network    = google_compute_network.default.id
+    subnetwork = google_compute_subnetwork.default.id
     access_config {}
   }
 
@@ -48,7 +56,7 @@ resource "google_compute_instance" "ib-app" {
     container-vm = module.ib-app.vm_container_label
   }
 
-  tags = [var.project_id, var.app_vm_name]
+  tags = [var.project_name, var.app_vm_name]
 
   service_account {
     scopes = [
