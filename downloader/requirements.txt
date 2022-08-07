@@ -1,5 +1,0 @@
-ib-insync>=0.9.56
-schedule>=1.1.0
-pandas-market-calendars>=2.0
-jupyterlab>=3.0.7
-google-cloud-storage>=1.39.0

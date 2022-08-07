@@ -1,39 +1,41 @@
 # === SETUP ===
+include .envrc
 PROJECT := ibkr-trading
 REPOSITORY := omdv/ibkr-trading
 
 GATEWAY_FOLDER := ./gateway
-GATEWAY_IMAGE := docker.io/omdv/ib-gateway:latest
-APP_IMAGE := docker.io/omdv/ib-downloader:latest
-APP_FOLDER := ./downloader
+GATEWAY_IMAGE := docker.io/omdv/ib-gateway:${IB_GATEWAY_VERSION}
+
+APP_FOLDER := ./app
+APP_IMAGE := docker.io/omdv/ib-app:${IB_APP_VERSION}
 
 # === DEVELOPMENT ===
 .PHONY: test
 test:
-	docker-compose up -d
+	docker-compose up -d --build
 
 .PHONY: dev
-dev:
+dev: build-gateway build-app
 	docker-compose up -d --build
 
 # === DOCKER ===
 .PHONY: build-gateway
 build-gateway:
-	docker build -t $(GATEWAY_IMAGE) $(GATEWAY_FOLDER)
+	docker build -t $(GATEWAY_IMAGE) $(GATEWAY_FOLDER) --build-arg IBC_VERSION=${IBC_VERSION} --build-arg IB_GATEWAY_VERSION=${IB_GATEWAY_VERSION}
 
-.PHONY: publish-gateway
-publish-gateway:
-	docker push $(GATEWAY_IMAGE)
-
-.PHONY: build-app-test
+.PHONY: build-app
 build-app:
 	docker build -t $(APP_IMAGE) $(APP_FOLDER)
 
-.PHONY: publish-app-test
-publish-app:
+.PHONY: publish-gateway
+publish-gateway: build-gateway
+	docker push $(GATEWAY_IMAGE)
+
+.PHONY: publish-app
+publish-app: build-app
 	docker push $(APP_IMAGE)
-	
-.PHONY: publish-all
-publish-all: build-gateway publish-gateway build-app publish-app
+
+.PHONY: publish
+publish-all: publish-gateway publish-app
 
 # === DEPLOYMENTS ===

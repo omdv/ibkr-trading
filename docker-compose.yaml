@@ -1,21 +1,23 @@
+---
 version: '2.4'
 services:
   ib-gateway:
-    build: ./gateway
+    image: omdv/ib-gateway:${IB_GATEWAY_VERSION}
     environment:
       - TWSUSERID=${TWS_USER_ID}
       - TWSPASSWORD=${TWS_PASSWORD}
       - TRADING_MODE=${TWS_TRADING_MODE}
     restart: always
     ports:
-    - 4041:4041
-    - 4042:4042
+      - 4041:4041
+      - 4042:4042
 
   ib-app:
-    build: ./downloader
+    image: omdv/ib-app:${IB_APP_VERSION}
     environment:
       - IB_GATEWAY_HOST=ib-gateway
       - IB_GATEWAY_PORT=4041
+      - STORAGE_BACKEND=local
     restart: on-failure
     depends_on:
-    - ib-gateway
+      - ib-gateway

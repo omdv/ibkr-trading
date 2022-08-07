@@ -11,10 +11,10 @@
 # be preserved on update.
 #
 
-# See all Java flags with /opt/i4j_jres/1.8.0_152/bin/java -XX:+PrintFlagsFinal -version
+# See all Java flags with /opt/i4j_jres/1.8.0_152-tzdata2019c/bin/java -XX:+PrintFlagsFinal -version
 
 -Dinstaller.uuid=30e5165d-48a8-4bd7-9566-f639f502b3c7
--DvmOptionsPath=/root/Jts/ibgateway/978/ibgateway.vmoptions
+-DvmOptionsPath=/root/Jts/ibgateway/981.3c/ibgateway.vmoptions
 -Dsun.awt.nopixfmt=true
 -Dsun.java2d.noddraw=true
 -Dswing.boldMetal=false

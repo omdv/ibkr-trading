@@ -1,8 +1,14 @@
-# Interactive Brokers cloud deployment
+![ib-gateway-ver](https://img.shields.io/docker/v/omdv/ib-gateway?label=ib-gateway&l2ogo=docker)
+![ib-gateway-size](https://img.shields.io/docker/image-size/omdv/ib-gateway?label=ib-gateway&logo=docker)
+![ib-app-ver](https://img.shields.io/docker/v/omdv/ib-app?label=ib-app&l2ogo=docker)
+![ib-app-size](https://img.shields.io/docker/image-size/omdv/ib-app?label=ib-app&logo=docker)
+
+
+# Interactive Brokers Application
 
 This started as a development of IBKR trading application for cloud hosting. However during the development my objective changed towards being able to download real time option quotes for backtesting. So at the moment this repository includes the following:
 
-1. Docker image for IBKR gateway with IBC. While there are several images none met my requirements for reliability and self-recovery. I included health tracking scripts and restart if gateway or IBC fails.
+1. Docker image for IBKR gateway with IBC. While there are several images none met my requirements for reliability and self-recovery. I included **health tracking** scripts and restart if gateway or IBC fails.
 
 2. Docker image for the python application. Again, at the moment it is for downloading of the option quotes, but it has the right setup to create a trading application.
 
@@ -14,6 +20,13 @@ For local development create the following environment variables:
 
 - `$TWS_TRADING_MODE` for trading mode. Allowed values are `paper` or `live`.
 - `$TWS_USER_ID` and `$TWS_PASSWORD`.
+
+
+### Dependencies
+
+- `pre-commit`
+- `direnv`
+- `ripsecrets`
 
 ### Local development / Testing
 
