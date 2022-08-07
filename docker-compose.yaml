@@ -4,9 +4,9 @@ services:
   ib-gateway:
     image: omdv/ib-gateway:${IB_GATEWAY_VERSION}
     environment:
-      - TWSUSERID=${TWS_USER_ID}
-      - TWSPASSWORD=${TWS_PASSWORD}
-      - TRADING_MODE=${TWS_TRADING_MODE}
+      - TWSUSERID=${IB_USER_ID}
+      - TWSPASSWORD=${IB_PASSWORD}
+      - TRADING_MODE=${IB_TRADING_MODE}
     restart: always
     ports:
       - 4041:4041

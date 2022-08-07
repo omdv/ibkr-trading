@@ -1,5 +1,5 @@
 # === SETUP ===
-include .envrc
+include .env
 PROJECT := ibkr-trading
 REPOSITORY := omdv/ibkr-trading
 
@@ -36,6 +36,6 @@ publish-app: build-app
 	docker push $(APP_IMAGE)
 
 .PHONY: publish
-publish-all: publish-gateway publish-app
+publish: publish-gateway publish-app
 
 # === DEPLOYMENTS ===

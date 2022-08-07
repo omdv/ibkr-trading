@@ -30,7 +30,7 @@ class Bot():
         self.tz = pytz.timezone('US/Eastern')
         self.tfmt = "%Y-%m-%dT%H:%M:%S%z"
 
-    
+
     def __del__(self):
         try:
             self.ib.disconnect()
@@ -64,7 +64,7 @@ class Bot():
             price = obj.close
         else:
             price = (obj.bid + obj.ask)/2.0
-        
+
         if price < 0 or np.isnan(price):
             logger.debug("No price at {}".format(obj))
             raise NegativePrice
@@ -81,7 +81,7 @@ class Bot():
         self.options = [p.contract for p in self.ptf if p.contract.secType == 'OPT']
         self.options = self.ib.qualifyContracts(*self.options)
         self.tickers = self.ib.reqTickers(*self.options)
-        
+
         # get underlying contracts and tickers
         underConIds = [self.ib.reqContractDetails(c)[0].underConId for c in self.options]
         underContracts = [ib_insync.Contract(conId=c) for c in underConIds]
@@ -99,7 +99,7 @@ class Bot():
         ], axis=1)
 
         df['option_price'] = df.apply(self.price_getter, axis=1)
-        
+
         self.options = df
         self.ib.disconnect()
 
@@ -115,7 +115,7 @@ class Bot():
 
         df['risk_free_rate'] = self.config['INTEREST_RATE']
         df['right'] = df['right'].str.lower()
-        
+
         # get time to expiration in years
         expiration = pd.to_datetime(df['lastTradeDateOrContractMonth'] + 'T16:00:00',
                                     errors='raise').dt.tz_localize(tz=self.tz)
@@ -131,7 +131,7 @@ class Bot():
             price_col='option_price',
             model='black_scholes',
             inplace=True)
-        
+
         # merge with portfolio to get positions
         ptf = ib_insync.util.df(self.ptf)
         ptf ['conId'] = ptf.apply(lambda x: x['contract'].conId,axis=1)
@@ -159,7 +159,7 @@ class Bot():
         ptf_theta = np.sum(df['theta'] *
                            np.abs(df['position']) *
                            df['multiplier'].astype(np.float32))
-        
+
         ptf_delta = np.sum(df['delta'] *
                            np.abs(df['position']) *
                            df['multiplier'].astype(np.float32) *
@@ -168,7 +168,7 @@ class Bot():
         self.ptf_stats['theta'] = ptf_theta
         self.ptf_stats['delta'] = ptf_delta
         self.ptf_stats['timestamp'] = dt.datetime.now(tz=self.tz).strftime(self.tfmt)
-        
+
 
     def position_stats(self):
         """
@@ -188,7 +188,7 @@ class Bot():
         Save selected properties to firestore
         """
         client = firestore.Client()
-        
+
         doc = client.collection(self.config['FIRESTORE_COLLECTION']).document(u'ptf_stats')
         doc.set(self.ptf_stats)
 
@@ -217,12 +217,12 @@ class Bot():
             self.process_options()
             self.portfolio_stats()
             self.position_stats()
-            
+
             try:
                 self.save_state_to_firestore()
             except:
                 logger.warning("Cannot save to Firestore")
-            
+
             time.sleep(self.config['DELAY'])
 
 

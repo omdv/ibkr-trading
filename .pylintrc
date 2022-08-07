@@ -22,6 +22,9 @@ persistent=yes
 # usually to register additional checkers.
 load-plugins=
 
+ignore-paths=^development/trader/.*$,
+             ^development/trader-dev/.*$
+
 [REPORTS]
 
 # Set the output format. Available formats are text, parseable, colorized, msvs

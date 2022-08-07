@@ -1,7 +1,5 @@
-ib-insync>=0.9.56
+ib-insync==0.9.56ib-insync>=0.9.56
 pandas>=1.2.0
 numpy>=1.19.5
-google-cloud-firestore>=2.0.2
 py_vollib>=1.0.1
 py_vollib_vectorized>=0.1
-jupyterlab>=3.0.7

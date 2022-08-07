@@ -81,5 +81,3 @@ resource "google_compute_instance" "ib-gateway" {
     google_compute_address.ib-gateway-internal-ip,
   ]
 }
-
-
