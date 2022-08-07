@@ -19,5 +19,7 @@ services:
       - IB_GATEWAY_PORT=4041
       - STORAGE_BACKEND=local
     restart: on-failure
+    volumes:
+      - ./downloads:/data
     depends_on:
       - ib-gateway
