@@ -8,10 +8,13 @@ repos:
           - --config-file
           - .github/lint/.yamllint.yaml
         id: yamllint
-  - repo: https://github.com/pycqa/pylint
-    rev: v2.14.5
+  - repo: local
     hooks:
       - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
         args:
           - --rcfile
           - ./.pylintrc

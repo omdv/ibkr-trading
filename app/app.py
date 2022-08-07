@@ -1,6 +1,5 @@
 """
 Template for IB API trading bot.
-Currently implements only download of quotes.
 """
 
 import logging
@@ -9,11 +8,11 @@ import datetime as dt
 import time
 import random
 import functools
-import holidays # pylint: disable=import-error
-import ib_insync # pylint: disable=import-error
-import schedule # pylint: disable=import-error
-import pytz # pylint: disable=import-error
-from google.cloud import storage # pylint: disable=import-error
+import holidays
+import ib_insync
+import schedule
+import pytz
+from google.cloud import storage
 
 
 logging.basicConfig(level=logging.DEBUG)
