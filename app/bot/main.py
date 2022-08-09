@@ -4,7 +4,6 @@ Bot class.
 
 import time
 import datetime as dt
-import json
 
 import pytz
 import schedule
@@ -16,10 +15,14 @@ from .utils import bot_logger, ib_logger
 from .utils import if_after_hours, print_elapsed_time
 
 
+class ConnectionIssue(Exception):
+    """ my custom exception class """
+
+
 class Bot():
     """Class representing a trading bot."""
     def __init__(self, config):
-        self.config = json.load(config)
+        self.config = config
         self.ibkr = None
         self.timezone = pytz.timezone('US/Eastern')
 
@@ -39,17 +42,36 @@ class Bot():
         port = self.config['server']['ib_gateway_port']
 
         self.ibkr = ib_insync.IB()
-        self.ibkr.connect(
-            host = host,
-            port = port,
-            clientId =self.config['server']['client_id'],
-            timeout = 15,
-            readonly = True)
+
+        try:
+            self.ibkr.connect(
+                host = host,
+                port = port,
+                clientId =self.config['server']['client_id'],
+                timeout = 15,
+                readonly = True)
+        except ConnectionIssue as e:
+            bot_logger.error(e)
+
         ib_logger.debug('Connected to IB on %s:%s', host, port)
 
         ib_logger.info('Setting market data type')
         self.ibkr.reqMarketDataType(
             self.config['downloader']['mkt_data_type'])
+
+
+    def _test_connection(self):
+        """
+        Test connection to IB
+        """
+        try:
+            self._connect_to_gateway()
+            bot_logger.info("Connected to IB")
+            self.ibkr.disconnect()
+        except ConnectionIssue as e:
+            bot_logger.error(e)
+            return False
+        return True
 
 
     def _save_option_chain(self, tickers):
@@ -156,6 +178,9 @@ class Bot():
         """
         Run loop
         """
+
+        self._test_connection()
+
         # schedule.every().hour.at(":00").do(self.get_option_chain)
         # schedule.every().hour.at(":20").do(self.get_option_chain)
         # schedule.every().hour.at(":20").do(self.get_option_chain)

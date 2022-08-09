@@ -14,11 +14,11 @@ RUN pip install --upgrade pip
 COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
 
-COPY ./app.py /tmp/
+COPY . /app
 
 # healthcheck
 HEALTHCHECK --start-period=30s --timeout=5s --interval=10s --retries=2 CMD bash -c 'pidof python || kill 1' || exit 1
 
 # tini entrypoint to be able to `kill 1`
 ENTRYPOINT ["tini", "--"]
-CMD ["python", "/tmp/app.py"]
+CMD ["python", "/app/app.py"]
