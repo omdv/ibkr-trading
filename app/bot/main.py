@@ -67,7 +67,9 @@ class Bot():
         try:
             self._connect_to_gateway()
             bot_logger.info("Connected to IB")
+            time.sleep(10)
             self.ibkr.disconnect()
+            bot_logger.info("Disconnected from IB")
         except ConnectionIssue as e:
             bot_logger.error(e)
             return False
