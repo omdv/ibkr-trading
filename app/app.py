@@ -15,6 +15,7 @@ if __name__ == "__main__":
             'client_id': os.getenv('CLIENT_ID', random.randint(1001,9999)),
         },
         'settings': {
+            'timezone': 'US/Eastern',
             'timeformat': "%Y-%m-%dT%H%M"
         },
         'downloader': {

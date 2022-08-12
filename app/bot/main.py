@@ -3,21 +3,18 @@ Bot class.
 """
 
 import time
-import os
-import datetime as dt
 
 import pytz
 import schedule
 import ib_insync
 
-from google.cloud import storage
-
 from .utils import bot_logger, ib_logger
+from .utils import save_options_to_file, save_options_to_sqlite, save_options_to_gcs
 from .utils import if_after_hours, print_elapsed_time
 
 
 class ConnectionIssue(Exception):
-    """ my custom exception class """
+    """ My custom exception class. """
 
 
 class Bot():
@@ -25,8 +22,8 @@ class Bot():
     def __init__(self, config):
         self.config = config
         self.ibkr = None
-        self.timezone = pytz.timezone('US/Eastern')
-
+        self.config['settings']['timezone'] =\
+            pytz.timezone(self.config['settings']['timezone'])
 
     def __del__(self):
         try:
@@ -80,8 +77,6 @@ class Bot():
         Aux function to serialize and save the chain
         """
         tickers = ib_insync.util.df(tickers)
-        filename = dt.datetime.now(self.timezone).\
-            strftime(self.config['settings']['timeformat'])
 
         contract_attr = [
             'symbol',
@@ -109,17 +104,14 @@ class Bot():
         except AttributeError:
             tickers = tickers[contract_attr + ['ask', 'bid']]
 
+        switcher = {
+            'gcs': save_options_to_gcs,
+            'file': save_options_to_file,
+            'sqlite': save_options_to_sqlite
+        }
 
-        if self.config['persistence']['backend'] == 'gcs':
-            client = storage.Client()
-            bucket = client.get_bucket(self.config['GCS_BUCKET_NAME'])
-            bucket.blob(f'options/{filename}.csv').upload_from_string(
-                tickers.to_csv(index=False),
-                'text/csv')
-
-        if self.config['persistence']['backend'] == 'file':
-            filename = os.path.join(self.config['persistence']['file_path'], filename)
-            tickers.to_csv(f'{filename}', index=False)
+        func = switcher.get(self.config['persistence']['backend'], "None")
+        func(self.config, tickers)
 
 
     @print_elapsed_time
@@ -127,7 +119,7 @@ class Bot():
         """
         Handle interactions with API and raise related exceptions here
         """
-        if if_after_hours(self.timezone):
+        if if_after_hours(self.config['settings']['timezone']):
             bot_logger.info("Market is closed, skipping")
             return
 
@@ -180,12 +172,8 @@ class Bot():
         """
         Run loop
         """
-
         self._test_connection()
 
-        # schedule.every().hour.at(":00").do(self.get_option_chain)
-        # schedule.every().hour.at(":20").do(self.get_option_chain)
-        # schedule.every().hour.at(":20").do(self.get_option_chain)
         schedule.every(10).minutes.do(self._get_option_chain)
 
         bot_logger.info("Started schedule")
