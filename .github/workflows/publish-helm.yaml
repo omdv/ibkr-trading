@@ -13,4 +13,5 @@ jobs:
       - name: Publish Helm charts
         uses: stefanprodan/helm-gh-pages@master
         with:
+          owner: omdv
           token: ${{ secrets.GH_TOKEN }}
