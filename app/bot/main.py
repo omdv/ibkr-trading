@@ -146,7 +146,7 @@ class Bot():
         chains = self.ibkr.reqSecDefOptParams(under.symbol, '', under.secType, under.conId)
 
         chain = next(c for c in chains if
-            c.tradingClass == self.config['donwloader']['trading_class'] and c.exchange == 'SMART')
+            c.tradingClass == self.config['downloader']['trading_class'] and c.exchange == 'SMART')
 
         strikes = [strike for strike in chain.strikes
             if under_value*0.9 < strike < under_value*1.1]

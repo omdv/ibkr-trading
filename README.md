@@ -28,15 +28,22 @@ The `docker.io/omdv/ib-gateway` container expect three variables:
 
 > :warning: It is recommended to create a second account in Interactive Brokers and limit permissions.
 
-## Local deployment
+## Docker-compose deployment
 
 Add your variables to `.env`. Then run `make dev`, which will start `docker-compose`.
 
-## Cloud deployment
+## Helm chart deployment
 
-For production I recommend to use server environment or one of cloud platforms. This repository has Terraform recipes for GCP.
+Add repo and find the latest version.
 
-It is based on two separate VMs hosting gateway and application containers, connected via VPC. Such separation allows to remove concerns around security by making gateway accessible only by trading application via internal network. Trading application is expected (at least at the moment) to be stateless with the hope to make it serverless in the future.
+```bash
+helm repo add ibkr-trading https://omdv.github.io/ibkr-trading/
+helm search repo ibkr-trading
+```
+
+## GCP deployment
+
+This repository has Terraform recipes for GCP. It is based on two separate VMs hosting gateway and application containers, connected via VPC. Such separation allows to remove concerns around security by making gateway accessible only by trading application via internal network. Trading application is expected (at least at the moment) to be stateless with the hope to make it serverless in the future.
 
 To deploy you will need to expose the following env variables or enter them in console during terraform application:
 
