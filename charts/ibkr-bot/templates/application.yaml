@@ -40,8 +40,11 @@ spec:
               value: {{ include "ibkr.fullname" . }}-gateway.{{ .Release.Namespace }}.svc.cluster.local
             - name: IB_GATEWAY_PORT
               value: {{ if eq .Values.gateway.tradingMode "live" }}"4041"{{ else if eq .Values.gateway.tradingMode "paper" }}"4042"{{ end }}
-            - name: STORAGE_BACKEND
-              value: "{{ .Values.application.storageBackend }}"
+          {{- if .Values.application.configMapName }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.application.configMapName }}
+          {{- end}}
           {{- if .Values.application.persistence }}
           volumeMounts:
             - mountPath: {{ .Values.application.persistence.mountPath }}

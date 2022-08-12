@@ -14,5 +14,3 @@ jobs:
         uses: stefanprodan/helm-gh-pages@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          app_version: 1.0.0
-          chart_version: 0.3.0
