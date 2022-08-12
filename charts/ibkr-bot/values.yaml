@@ -53,7 +53,11 @@ application:
     pullPolicy: Always
     tag: "1.0.0"
 
-  storageBackend: "local"
+  # supported values:
+  # - "file"
+  # - "sqlite"
+  # - "gcp"
+  storageBackend: "file"
 
   # needs existing claim if enabled
   persistence:
