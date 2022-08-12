@@ -1,7 +1,7 @@
 ---
 apiVersion: v2
 name: ibkr-bot
-description: A Helm chart for Kubernetes
+description: A Helm chart for Interactive Brokers bot
 type: application
-version: 0.1.0
-appVersion: "1.16.0"
+version: 0.2.0
+appVersion: "1.0.1012"
