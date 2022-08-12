@@ -24,7 +24,8 @@ if __name__ == "__main__":
         },
         'persistence': {
             'backend': os.getenv('STORAGE_BACKEND', 'file'),
-            'gcs_bucket_name': os.getenv('GCS_BUCKET_NAME'),
+            'mount_path': os.getenv('STORAGE_MOUNT_PATH', '/data'),
+            'gcs_bucket_name': os.getenv('GCS_BUCKET_NAME')
         }
     }
 

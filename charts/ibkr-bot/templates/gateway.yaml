@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ibkr.fullname" . }}-gateway
+  labels:
+    {{- include "ibkr.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "gateway"
+spec:
+  replicas: {{ .Values.gateway.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ibkr.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "gateway"
+  template:
+    metadata:
+      {{- with .Values.gateway.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ibkr.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: "gateway"
+    spec:
+      {{- with .Values.gateway.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ibkr.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.gateway.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.gateway.securityContext | nindent 12 }}
+          image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
+          ports:
+            - name: live
+              containerPort: 4041
+              protocol: TCP
+            - name: paper
+              containerPort: 4042
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: live
+            tcpSocket:
+              port: paper
+          readinessProbe:
+            tcpSocket:
+              port: live
+            tcpSocket:
+              port: paper
+          envFrom:
+            - secretRef:
+                name: {{ .Values.gateway.existingSecret }}
+          env:
+            - name: TRADING_MODE
+              value: "{{ .Values.gateway.tradingMode }}"
+          resources:
+            {{- toYaml .Values.gateway.resources | nindent 12 }}
+      {{- with .Values.gateway.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.gateway.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.gateway.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

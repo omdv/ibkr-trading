@@ -1,0 +1,78 @@
+---
+# Default values for ibkr-trading.
+
+nameOverride: ""
+fullnameOverride: "ibkr-bot"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+
+gateway:
+  replicaCount: 1
+
+  image:
+    repository: omdv/ib-gateway
+    pullPolicy: IfNotPresent
+    tag: "1012"
+
+  # The name of the secret containing the credentials for the gateway
+  # expecting TWSUSERID and TWSPASSWORD variables
+  existingSecret: "ibkr-secret"
+
+  # Expecting "paper" or "live"
+  tradingMode: "live"
+
+  imagePullSecrets: []
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+
+  securityContext: {}
+
+  resources: {}
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+application:
+  replicaCount: 1
+
+  image:
+    repository: omdv/ib-app
+    pullPolicy: Always
+    tag: "1.0.0"
+
+  storageBackend: "local"
+
+  # needs existing claim if enabled
+  persistence:
+    enabled: true
+    existingClaim: "pvc-ibkr"
+    mountPath: "/data"
+
+  imagePullSecrets: []
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+
+  securityContext: {}
+
+  resources: {}
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}

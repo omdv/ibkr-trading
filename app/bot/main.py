@@ -3,6 +3,7 @@ Bot class.
 """
 
 import time
+import os
 import datetime as dt
 
 import pytz
@@ -66,10 +67,8 @@ class Bot():
         """
         try:
             self._connect_to_gateway()
-            bot_logger.info("Connected to IB")
             time.sleep(10)
             self.ibkr.disconnect()
-            bot_logger.info("Disconnected from IB")
         except ConnectionIssue as e:
             bot_logger.error(e)
             return False
@@ -111,15 +110,16 @@ class Bot():
             tickers = tickers[contract_attr + ['ask', 'bid']]
 
 
-        if self.config['STORAGE_BACKEND'] == 'gcs':
+        if self.config['persistence']['backend'] == 'gcs':
             client = storage.Client()
             bucket = client.get_bucket(self.config['GCS_BUCKET_NAME'])
             bucket.blob(f'options/{filename}.csv').upload_from_string(
                 tickers.to_csv(index=False),
                 'text/csv')
 
-        if self.config['STORAGE_BACKEND'] == 'file':
-            tickers.to_csv(f'/data/{filename}', index=False)
+        if self.config['persistence']['backend'] == 'file':
+            filename = os.path.join(self.config['persistence']['file_path'], filename)
+            tickers.to_csv(f'{filename}', index=False)
 
 
     @print_elapsed_time

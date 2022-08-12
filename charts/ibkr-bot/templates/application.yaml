@@ -1,0 +1,69 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ibkr.fullname" . }}-application
+  labels:
+    {{- include "ibkr.labels" . | nindent 2 }}
+    app.kubernetes.io/component: "application"
+spec:
+  replicas: {{ .Values.application.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ibkr.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "application"
+  template:
+    metadata:
+      {{- with .Values.application.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ibkr.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: "application"
+    spec:
+      {{- with .Values.application.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ibkr.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.application.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.application.securityContext | nindent 12 }}
+          image: "{{ .Values.application.image.repository }}:{{ .Values.application.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.application.image.pullPolicy }}
+          env:
+            - name: IB_GATEWAY_HOST
+              value: {{ include "ibkr.fullname" . }}-gateway.{{ .Release.Namespace }}.svc.cluster.local
+            - name: IB_GATEWAY_PORT
+              value: {{ if eq .Values.gateway.tradingMode "live" }}"4041"{{ else if eq .Values.gateway.tradingMode "paper" }}"4042"{{ end }}
+            - name: STORAGE_BACKEND
+              value: "{{ .Values.application.storageBackend }}"
+          {{- if .Values.application.persistence }}
+          volumeMounts:
+            - mountPath: {{ .Values.application.persistence.mountPath }}
+              name: volume
+          {{- end }}
+          resources:
+            {{- toYaml .Values.application.resources | nindent 12 }}
+      {{- with .Values.application.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.application.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.application.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.application.persistence }}
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: {{ .Values.application.persistence.existingClaim }}
+      {{- end }}
