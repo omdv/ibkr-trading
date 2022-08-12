@@ -1,5 +1,5 @@
 ---
-name: publish-helm
+name: Publish Helm
 on:
   push:
     branches:

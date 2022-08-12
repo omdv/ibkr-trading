@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: {{ include "ibkr.fullname" . }}-application
   labels:
-    {{- include "ibkr.labels" . | nindent 2 }}
+    {{- include "ibkr.labels" . | nindent 4 }}
     app.kubernetes.io/component: "application"
 spec:
   replicas: {{ .Values.application.replicaCount }}
