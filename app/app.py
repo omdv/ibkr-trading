@@ -2,7 +2,6 @@
 Template for IB API trading bot.
 """
 import os
-import random
 from bot import main
 
 if __name__ == "__main__":
@@ -12,7 +11,6 @@ if __name__ == "__main__":
             'trading_mode': os.getenv('TRADING_MODE', 'paper'),
             'ib_gateway_host': os.getenv('IB_GATEWAY_HOST', '127.0.0.1'),
             'ib_gateway_port': os.getenv('IB_GATEWAY_PORT', '4001'),
-            'client_id': os.getenv('CLIENT_ID', random.randint(1001,9999)),
         },
         'settings': {
             'timezone': 'US/Eastern',

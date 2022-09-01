@@ -3,6 +3,7 @@ Bot class.
 """
 
 import time
+import datetime as dt
 
 import pytz
 import schedule
@@ -45,7 +46,7 @@ class Bot():
             self.ibkr.connect(
                 host = host,
                 port = port,
-                clientId =self.config['server']['client_id'],
+                clientId = dt.datetime.utcnow().strftime('%H%M'),
                 timeout = 15,
                 readonly = True)
         except ConnectionIssue as e:

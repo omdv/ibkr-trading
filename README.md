@@ -15,7 +15,7 @@ Boilerplate or framework to create your own trading application or bot using Int
 You can use these images as-is. In addition I provide several ways to deploy the application:
 - docker-compose, which can be good for local development and hosting
 - terraform for deploying on GCP IaaS (VMs)
-- helm chart (WIP) for deploying on Kubernetes cluster (local or PaaS)
+- helm chart for deploying on Kubernetes cluster (local or PaaS)
 
 # Usage
 
