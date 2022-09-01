@@ -37,5 +37,3 @@ publish-app: build-app
 
 .PHONY: publish
 publish: publish-gateway publish-app
-
-# === DEPLOYMENTS ===
