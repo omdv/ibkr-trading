@@ -175,7 +175,7 @@ class Bot():
         """
         self._test_connection()
 
-        schedule.every(10).minutes.do(self._get_option_chain)
+        schedule.every(self.config['downloader']['frequency']).minutes.do(self._get_option_chain)
 
         bot_logger.info("Started schedule")
         while True:

@@ -20,6 +20,7 @@ if __name__ == "__main__":
             'mkt_data_type': os.getenv('MKT_DATA_TYPE', '4'),
             'symbol': os.getenv('SYMBOL', 'SPX'),
             'trading_class': os.getenv('TRADING_CLASS', 'SPXW'),
+            'frequency': os.getenv('DOWNLOAD_EVERY_MINS', '30')
         },
         'persistence': {
             'backend': os.getenv('STORAGE_BACKEND', 'file'),
