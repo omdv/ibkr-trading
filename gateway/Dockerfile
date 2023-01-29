@@ -35,10 +35,6 @@ RUN chmod u+x scripts/*.sh
 RUN mkdir /root/ibc
 COPY ./config.ini /root/ibc/config.ini
 
-# # Overwrite vmoptions file
-# RUN rm -f /root/Jts/ibgateway/${IB_GATEWAY_VERSION}/ibgateway.vmoptions
-# COPY ./ibgateway.vmoptions /root/Jts/ibgateway/${IB_GATEWAY_VERSION}/ibgateway.vmoptions
-
 # some default env
 ENV TZ=America/Chicago
 ENV DISPLAY :0
@@ -46,8 +42,15 @@ ENV DISPLAY :0
 COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # healthcheck - if gateway not running kill the container
-HEALTHCHECK --start-period=30s --timeout=5s --interval=10s --retries=2 CMD bash -c 'pidof java || kill 1' || exit 1
+# HEALTHCHECK --start-period=30s --timeout=5s --interval=10s --retries=2 CMD bash -c 'pidof java || kill 1' || exit 1
+HEALTHCHECK --start-period=30s --timeout=5s --interval=10s --retries=2 CMD bash -c 'pidof java' || exit 1
+
 
 # tini entrypoint to be able to `kill 1`
-ENTRYPOINT ["tini", "--"]
-CMD ["/usr/bin/supervisord"]
+# ENTRYPOINT ["tini", "--"]
+# CMD ["/usr/bin/supervisord"]
+
+COPY ./start.sh /root/start.sh
+RUN chmod u+x /root/start.sh
+
+ENTRYPOINT [ "sh", "/root/start.sh" ]
