@@ -34,3 +34,17 @@ jobs:
           registry: ghcr.io
           workdir: ./app
           tags: "latest"
+  publish-gateway-github:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@v4
+        with:
+          name: omdv/ib-gateway
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          workdir: ./gateway
+          tags: ${{ env.IB_GATEWAY_VERSION }}
