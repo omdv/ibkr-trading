@@ -16,7 +16,7 @@ test:
 
 .PHONY: dev
 dev: build-gateway build-app
-	docker-compose up -d --build
+	docker-compose up -d
 
 # === DOCKER ===
 .PHONY: build-gateway

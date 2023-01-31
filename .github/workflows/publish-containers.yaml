@@ -10,41 +10,62 @@ jobs:
   publish-app-docker:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      -
+        name: checkout
         uses: actions/checkout@v3
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@v4
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
         with:
-          name: omdv/ib-app
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-          workdir: ./app
-          tags: "latest"
-  publish-app-github:
+      -
+        name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          context: ./app
+          tags: omdv/ib-app:latest
+  publish-gateway-docker:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      -
+        name: checkout
         uses: actions/checkout@v3
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@v4
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
         with:
-          name: omdv/ib-app
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ghcr.io
-          workdir: ./app
-          tags: "latest"
-  publish-gateway-github:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@v4
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v4
         with:
-          name: omdv/ib-gateway
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ghcr.io
-          workdir: ./gateway
-          tags: ${{ env.IB_GATEWAY_VERSION }}
+          push: true
+          context: ./gateway
+          tags: omdv/ib-gateway:${{ env.IB_GATEWAY_VERSION }}
+          build-args: |
+            IBC_VERSION=${{ env.IBC_VERSION }}
+            IB_GATEWAY_VERSION=${{ env.IB_GATEWAY_VERSION }}
+
+  # publish-gateway-github:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v3
+  #     - name: Publish to Registry
+  #       uses: elgohr/Publish-Docker-Github-Action@v4
+  #       with:
+  #         name: omdv/ib-gateway
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.GITHUB_TOKEN }}
+  #         registry: ghcr.io
+  #         workdir: ./gateway
+  #         tags: ${{ env.IB_GATEWAY_VERSION }}

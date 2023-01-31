@@ -2,7 +2,7 @@
 version: '2.4'
 services:
   ib-gateway:
-    image: omdv/ib-gateway-docker:v1.3.3
+    image: docker.io/omdv/ib-gateway:${IB_GATEWAY_VERSION}
     environment:
       - IB_ACCOUNT=${IB_USER_ID}
       - IB_PASSWORD=${IB_PASSWORD}
@@ -13,7 +13,7 @@ services:
       - 4042:4042
 
   ib-app:
-    image: omdv/ib-app:${IB_APP_VERSION}
+    image: docker.io/omdv/ib-app:${IB_APP_VERSION}
     environment:
       - IB_GATEWAY_HOST=ib-gateway
       - IB_GATEWAY_PORT=4041
