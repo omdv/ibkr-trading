@@ -3,9 +3,9 @@ entries:
   ibkr-bot:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-01-29T19:39:58.734474468Z"
+    created: "2023-01-31T01:12:49.346676539Z"
     description: A Helm chart for Interactive Brokers bot
-    digest: b6d8e8966e2ccb4f47badf6302c5c29f65626d360e287eb506c9584ffbb47ea4
+    digest: e87880f9078eecd87b205d34097abc7fd9e7577a502ecf0c2d85c26ca6cf04ba
     name: ibkr-bot
     type: application
     urls:
@@ -31,4 +31,4 @@ entries:
     urls:
     - https://omdv.github.io/ibkr-trading/ibkr-bot-0.2.0.tgz
     version: 0.2.0
-generated: "2023-01-29T19:39:58.733766368Z"
+generated: "2023-01-31T01:12:49.344893625Z"
