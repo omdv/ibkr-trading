@@ -21,12 +21,10 @@ You can use these images as-is. In addition I provide several ways to deploy the
 
 ## Standalone Docker
 
-The `docker.io/omdv/ib-gateway` container expect three variables:
+The `docker.io/omdv/ib-gateway` container expects three variables:
 - `$TRADING_MODE`: `paper` or `live`.
 - `$TWSUSERID`
 - `$TWSPASSWORD`
-
-> :warning: It is recommended to create a second account in Interactive Brokers and limit permissions.
 
 ## Docker-compose deployment
 

@@ -5,6 +5,7 @@ Utility functions.
 import functools
 import time
 import logging
+import sys
 import datetime as dt
 import sqlite3
 import os
@@ -14,7 +15,11 @@ import holidays
 from google.cloud import storage
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
+    datefmt="%d%m%Y %H:%M:%S",
+    stream=sys.stdout,
+    level=logging.DEBUG)
 bot_logger = logging.getLogger('bot')
 ib_logger = logging.getLogger('ib')
 

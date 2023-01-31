@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  publish-app-docker:
+  publish-app:
     runs-on: ubuntu-latest
     steps:
       -
@@ -23,19 +23,29 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
       -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
         name: Build and push
         uses: docker/build-push-action@v4
         with:
           push: true
           context: ./app
-          tags: omdv/ib-app:latest
-  publish-gateway-docker:
+          tags: |
+            omdv/ib-app:latest
+            ghcr.io/omdv/ib-app:latest
+  publish-gateway:
     runs-on: ubuntu-latest
     steps:
       -
         name: checkout
         uses: actions/checkout@v3
       -
+        name: load dotenv
         id: dotenv
         uses: falti/dotenv-action@v1.0.2
       -
@@ -48,27 +58,21 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
       -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
         name: Build and push
         uses: docker/build-push-action@v4
         with:
           push: true
           context: ./gateway
-          tags: omdv/ib-gateway:${{ steps.dotenv.outputs.IB_GATEWAY_VERSION }}
           build-args: |
             IBC_VERSION=${{ steps.dotenv.outputs.IBC_VERSION }}
             IB_GATEWAY_VERSION=${{ steps.dotenv.outputs.IB_GATEWAY_VERSION }}
-
-  # publish-gateway-github:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v3
-  #     - name: Publish to Registry
-  #       uses: elgohr/Publish-Docker-Github-Action@v4
-  #       with:
-  #         name: omdv/ib-gateway
-  #         username: ${{ github.actor }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
-  #         registry: ghcr.io
-  #         workdir: ./gateway
-  #         tags: ${{ env.IB_GATEWAY_VERSION }}
+          tags: |
+            omdv/ib-gateway:${{ steps.dotenv.outputs.IB_GATEWAY_VERSION }}
+            ghcr.io/omdv/ib-gateway:${{ steps.dotenv.outputs.IB_GATEWAY_VERSION }}
