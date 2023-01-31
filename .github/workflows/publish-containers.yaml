@@ -36,6 +36,9 @@ jobs:
         name: checkout
         uses: actions/checkout@v3
       -
+        name: Dotenv Action
+        uses: falti/dotenv-action@v1.0.2
+      -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       -
@@ -50,10 +53,10 @@ jobs:
         with:
           push: true
           context: ./gateway
-          tags: omdv/ib-gateway:${{ env.IB_GATEWAY_VERSION }}
+          tags: omdv/ib-gateway:${{ steps.dotenv.outputs.IB_GATEWAY_VERSION }}
           build-args: |
-            IBC_VERSION=${{ env.IBC_VERSION }}
-            IB_GATEWAY_VERSION=${{ env.IB_GATEWAY_VERSION }}
+            IBC_VERSION=${{ steps.dotenv.outputs.IBC_VERSION }}
+            IB_GATEWAY_VERSION=${{ steps.dotenv.outputs.IB_GATEWAY_VERSION }}
 
   # publish-gateway-github:
   #   runs-on: ubuntu-latest
