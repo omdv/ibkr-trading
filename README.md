@@ -26,6 +26,13 @@ The `docker.io/omdv/ib-gateway` container expects three variables:
 - `$TWSUSERID`
 - `$TWSPASSWORD`
 
+Available tags:
+| Tag | Gateway version |
+| --- | ----: |
+| 1019 | 10.19 |
+| 1012 | 10.12 |
+| 981.3c | 981 |
+
 ## Docker-compose deployment
 
 Add your variables to `.env`. Then run `make dev`, which will start `docker-compose`.
