@@ -22,4 +22,5 @@ services:
     volumes:
       - ./downloads:/data
     depends_on:
-      - ib-gateway
+      ib-gateway:
+        condition: service_healthy
