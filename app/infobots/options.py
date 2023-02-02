@@ -2,16 +2,57 @@
 Bot class.
 """
 
+import os
+import sqlite3
 import ib_insync
+
+from google.cloud import storage
 
 from .base import InfoBot
 from .utils import logger
 from .utils import if_after_hours, print_elapsed_time
 
+
+
+
 class OptionsBot(InfoBot):
     """
     Downloading options quotes
     """
+
+    def _save_options_to_gcs(self, data):
+        """
+        Save data to google cloud storage
+        """
+        client = storage.Client()
+
+        filename = self._formatted_now()
+        bucket = client.get_bucket(self.config['persistence']['gcs_bucket_name'])
+        bucket.blob(f'{filename}.csv').upload_from_string(
+            data.to_csv(index=False), 'text/csv')
+
+
+    def _save_options_to_file(self, data):
+        """
+        Save data to file
+        """
+        filename = os.path.join(
+            self.config['persistence']['mount_path'],
+            self._formatted_now())
+        data.to_csv(f'{filename}', index=False)
+
+
+    def _save_options_to_sqlite(self, data):
+        """
+        Save data to sqlite db
+        """
+        filename = os.path.join(
+            self.config['persistence']['mount_path'],
+            self.config['persistence']['sqlite_filename'])
+        con = sqlite3.connect(filename)
+        data['quote_time'] = self._formatted_now()
+        data.to_sql(name='spx', con=con, if_exists='append', index=False)
+        con.close()
 
     def _set_market_data_type(self):
         """
@@ -54,13 +95,13 @@ class OptionsBot(InfoBot):
             tickers = tickers[contract_attr + ['ask', 'bid']]
 
         switcher = {
-            'gcs': self._save_data_to_gcs,
-            'file': self._save_data_to_file,
-            'sqlite': self._save_data_to_sqlite
+            'gcs': self._save_options_to_gcs,
+            'file': self._save_options_to_file,
+            'sqlite': self._save_options_to_sqlite
         }
 
         func = switcher.get(self.config['persistence']['backend'], "None")
-        func(self.config, tickers)
+        func(tickers)
 
 
     @print_elapsed_time
@@ -68,7 +109,7 @@ class OptionsBot(InfoBot):
         """
         Handle interactions with API and raise related exceptions here
         """
-        if if_after_hours(self.config['settings']['timezone']):
+        if if_after_hours(self.timezone):
             logger.info("Market is closed, skipping")
             return
 

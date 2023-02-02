@@ -11,7 +11,7 @@ import holidays
 
 logging.basicConfig(
     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
-    datefmt="%d%m%Y %H:%M:%S",
+    datefmt="%Y-%m-%d %H:%M:%S",
     stream=sys.stdout,
     level=logging.DEBUG)
 logger = logging.getLogger('infobot')

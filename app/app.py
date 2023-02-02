@@ -2,12 +2,12 @@
 Template for IB API trading bot.
 """
 import os
+import copy
 import time
 import schedule
 
 from infobots.base import InfoBot
 from infobots.positions import PositionsBot
-from infobots.options import OptionsBot
 from infobots.utils import logger
 
 if __name__ == "__main__":
@@ -22,7 +22,7 @@ if __name__ == "__main__":
             'timezone': 'US/Eastern',
             'timeformat': "%Y-%m-%dT%H%M"
         },
-        'persist': {
+        'persistence': {
             'backend': os.getenv('STORAGE_BACKEND', 'file'),
             'mount_path': os.getenv('STORAGE_MOUNT_PATH', '/data'),
             'gcs_bucket_name': os.getenv('GCS_BUCKET_NAME'),
@@ -30,12 +30,12 @@ if __name__ == "__main__":
         }
     }
 
-    positions_config = BASE_CONFIG
+    positions_config = copy.deepcopy(BASE_CONFIG)
     positions_config['download'] = {
-        'frequency': os.getenv('DOWNLOAD_EVERY_MINS', '1'),
+        'frequency': os.getenv('DOWNLOAD_EVERY_MINS', '30'),
     }
 
-    options_config = BASE_CONFIG
+    options_config = copy.deepcopy(BASE_CONFIG)
     options_config['download'] = {
         'frequency': os.getenv('DOWNLOAD_EVERY_MINS', '30'),
         'mkt_data_type': os.getenv('MKT_DATA_TYPE', '4'),
@@ -47,7 +47,6 @@ if __name__ == "__main__":
     base.test_connection()
 
     bots = [
-        OptionsBot(options_config),
         PositionsBot(positions_config)
     ]
 
@@ -55,7 +54,6 @@ if __name__ == "__main__":
         schedule.every(
             int(bot.config['download']['frequency'])).minutes.do(
                 bot.run)
-
 
     logger.info("Started schedule")
     while True:

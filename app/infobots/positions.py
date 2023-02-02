@@ -2,6 +2,9 @@
 Bot class.
 """
 
+import os
+import csv
+
 from .base import InfoBot
 from .utils import logger
 from .utils import print_elapsed_time
@@ -13,31 +16,40 @@ class PositionsBot(InfoBot):
     """
 
     @print_elapsed_time
-    def _get_positions(self):
+    def _get_fills(self):
         """
         Handle interactions with API and raise related exceptions here
         """
-        # if if_after_hours(self.config['settings']['timezone']):
-        #     logger.info("Market is closed, skipping")
-        #     return
-
-        logger.info("Attempting to get positions")
+        logger.info("Attempting to get fills for current session")
 
         self._connect_to_gateway()
         logger.info("Connected to IB")
 
-        positions = self.ibkr.positions()
-        logger.info("Positions:")
-        logger.info(positions)
+        fills = self.ibkr.fills()
+        self._save_fills(fills)
 
         self.ibkr.disconnect()
         logger.info("Disconnected from IB")
 
 
-    def _save_positions(self, tickers):
+    def _save_fills(self, fills):
         """
-        Aux function to serialize and save the positions
+        Aux function to serialize and save the fills
         """
+        result = []
+        for fill in fills:
+            combined = fill.contract.dict() | fill.execution.dict()
+            header = combined.keys()
+            result.append(combined)
+
+        filename = os.path.join(
+            self.config['persistence']['mount_path'],
+            self._formatted_now())
+
+        with open(filename, 'w', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames = header)
+            writer.writeheader()
+            writer.writerows(result)
 
 
     def run(self):
@@ -45,4 +57,4 @@ class PositionsBot(InfoBot):
         Main function for the loop
         """
 
-        self._get_positions()
+        self._get_fills()
