@@ -6,36 +6,23 @@
 
 # Interactive Brokers Application
 
-Boilerplate or framework to create your own trading application or bot using Interactive Brokers gateway. At the basic level this repo hosts images for two docker containers:
+Boilerplate or framework to create your own trading application or bot using Interactive Brokers gateway. Trading application consists of two docker images:
 
-1. Docker image for IBKR gateway with IBC. While there are several images none met my requirements for reliability and self-recovery.
+1. Docker image for IBKR gateway with IBC. I stopped maintaining my own version and instead recommend using the version from [UnstableAlpha](https://github.com/UnusualAlpha/ib-gateway-docker/tree/master)
 
 2. Docker image for the python application using `ib_insync` library, which supports scheduling and can be used for trading bot.
 
-You can use these images as-is. In addition I provide several ways to deploy the application:
+
+This repo provides several ways to deploy the application:
 - docker-compose, which can be good for local development and hosting
 - terraform for deploying on GCP IaaS (VMs)
 - helm chart for deploying on Kubernetes cluster (local or PaaS)
 
 # Usage
 
-## Standalone Docker
-
-The `docker.io/omdv/ib-gateway` container expects three variables:
-- `$TRADING_MODE`: `paper` or `live`.
-- `$TWSUSERID`
-- `$TWSPASSWORD`
-
-Available tags:
-| Tag | Gateway version |
-| --- | ----: |
-| 1019 | 10.19 |
-| 1012 | 10.12 |
-| 981.3c | 981 |
-
 ## Docker-compose deployment
 
-Add your variables to `.env`. Then run `make dev`, which will start `docker-compose`.
+Add your variables to `.envrc` and then `direnv allow`. Running `make dev` will start `docker-compose`.
 
 ## Helm chart deployment
 

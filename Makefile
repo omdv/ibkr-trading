@@ -1,5 +1,4 @@
 # === SETUP ===
-include .env
 PROJECT := ibkr-trading
 REPOSITORY := omdv/ibkr-trading
 
@@ -15,7 +14,7 @@ test:
 	docker-compose up -d --build
 
 .PHONY: dev
-dev: build-gateway build-app
+dev: build-app
 	docker-compose up -d
 
 # === DOCKER ===
