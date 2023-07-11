@@ -37,10 +37,10 @@ spec:
           imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
           ports:
             - name: live
-              containerPort: 4041
+              containerPort: {{ .Values.gateway.ports.live }}
               protocol: TCP
             - name: paper
-              containerPort: 4042
+              containerPort: {{ .Values.gateway.ports.paper }}
               protocol: TCP
           livenessProbe:
             tcpSocket:
