@@ -38,33 +38,3 @@ jobs:
           tags: |
             omdv/ib-app:latest
             ghcr.io/omdv/ib-app:latest
-  publish-gateway:
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: checkout
-        uses: actions/checkout@v3
-      -
-        name: load dotenv
-        id: dotenv
-        uses: falti/dotenv-action@v1.0.2
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-      -
-        name: Build and push
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          context: ./gateway
-          build-args: |
-            IBC_VERSION=${{ steps.dotenv.outputs.IBC_VERSION }}
-            IB_GATEWAY_VERSION=${{ steps.dotenv.outputs.IB_GATEWAY_VERSION }}
-          tags: |
-            omdv/ib-gateway:${{ steps.dotenv.outputs.IB_GATEWAY_VERSION }}
