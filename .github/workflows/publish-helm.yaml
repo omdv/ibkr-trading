@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - no-gateway
 
 jobs:
   release:
