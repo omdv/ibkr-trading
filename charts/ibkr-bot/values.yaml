@@ -18,9 +18,9 @@ gateway:
   replicaCount: 1
 
   image:
-    repository: omdv/ib-gateway
+    repository: unusualalpha/ib-gateway
     pullPolicy: IfNotPresent
-    tag: "1012"
+    tag: "stable"
 
   # The name of the secret containing the credentials for the gateway
   # expecting TWSUSERID and TWSPASSWORD variables
@@ -28,6 +28,10 @@ gateway:
 
   # Expecting "paper" or "live"
   tradingMode: "live"
+
+  ports:
+    live: "4001"
+    paper: "4002"
 
   imagePullSecrets: []
 
@@ -54,6 +58,8 @@ application:
     tag: "1.0.0"
 
   configMapName: ""
+
+  gatewayPort: "4001"
 
   # needs existing claim if enabled
   persistence:

@@ -1,24 +1,32 @@
 ---
-version: '2.4'
+version: '3.4'
 services:
+
   ib-gateway:
-    image: docker.io/omdv/ib-gateway:${IB_GATEWAY_VERSION}
-    environment:
-      - TWSUSERID=${IB_USER_ID}
-      - TWSPASSWORD=${IB_PASSWORD}
-      - TRADING_MODE=${IB_TRADING_MODE}
-    restart: always
+    image: ghcr.io/extrange/ibkr:10.19
     ports:
-      - 4041:4041
-      - 4042:4042
+      - "127.0.0.1:6080:6080" # noVNC browser access
+      - "127.0.0.1:8888:8888" # API access
+    ulimits:
+      nofile: 10000
+    environment:
+      USERNAME: ${IB_USER_ID}
+      PASSWORD: ${IB_PASSWORD}
+      TWOFA_TIMEOUT_ACTION: restart
+      GATEWAY_OR_TWS: gateway
+      IBC_TradingMode: ${IB_TRADING_MODE}
+    healthcheck:
+      test: pidof java || exit 1
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   ib-app:
-    image: docker.io/omdv/ib-app:${IB_APP_VERSION}
+    build: ./app
     environment:
       - IB_GATEWAY_HOST=ib-gateway
-      - IB_GATEWAY_PORT=4041
-      - STORAGE_BACKEND=file
-    restart: on-failure
+      - IB_GATEWAY_PORT=8888
     volumes:
       - ./downloads:/data
     depends_on:

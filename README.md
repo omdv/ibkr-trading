@@ -1,41 +1,27 @@
-![ib-gateway-ver](https://img.shields.io/docker/v/omdv/ib-gateway?label=ib-gateway&logo=docker)
-![ib-gateway-size](https://img.shields.io/docker/image-size/omdv/ib-gateway?label=ib-gateway&logo=docker)
 ![ib-app-ver](https://img.shields.io/docker/v/omdv/ib-app?label=ib-app&logo=docker)
 ![ib-app-size](https://img.shields.io/docker/image-size/omdv/ib-app?label=ib-app&logo=docker)
 
 
 # Interactive Brokers Application
 
-Boilerplate or framework to create your own trading application or bot using Interactive Brokers gateway. At the basic level this repo hosts images for two docker containers:
+Boilerplate to create your own trading application (bot) using Interactive Brokers gateway. Trading application involves two services:
 
-1. Docker image for IBKR gateway with IBC. While there are several images none met my requirements for reliability and self-recovery.
+1. Image for IBKR gateway with IBC. I stopped maintaining my own version and instead recommend using the `stable` version from [extrange](https://github.com/extrange/ibkr-docker)
 
-2. Docker image for the python application using `ib_insync` library, which supports scheduling and can be used for trading bot.
+2. Image for the python application using `ib_insync` library, which supports scheduling.
 
-You can use these images as-is. In addition I provide several ways to deploy the application:
-- docker-compose, which can be good for local development and hosting
-- terraform for deploying on GCP IaaS (VMs)
+
+This repo provides several ways to deploy the application:
+- docker-compose, which is recommended for local development
+- terraform for deploying on GCP IaaS using VMs
 - helm chart for deploying on Kubernetes cluster (local or PaaS)
+- (WIP) terraform for deploying on OCI using k8s
 
 # Usage
 
-## Standalone Docker
-
-The `docker.io/omdv/ib-gateway` container expects three variables:
-- `$TRADING_MODE`: `paper` or `live`.
-- `$TWSUSERID`
-- `$TWSPASSWORD`
-
-Available tags:
-| Tag | Gateway version |
-| --- | ----: |
-| 1019 | 10.19 |
-| 1012 | 10.12 |
-| 981.3c | 981 |
-
 ## Docker-compose deployment
 
-Add your variables to `.env`. Then run `make dev`, which will start `docker-compose`.
+Add your variables to `.envrc` and then `direnv allow`. Running `make dev` will start `docker-compose`.
 
 ## Helm chart deployment
 

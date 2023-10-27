@@ -46,6 +46,7 @@ class PositionsBot(InfoBot):
             self.config['persistence']['mount_path'],
             self._formatted_now())
 
+        logger.info("Saving data to file %s", filename)
         with open(filename, 'w', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames = header)
             writer.writeheader()
