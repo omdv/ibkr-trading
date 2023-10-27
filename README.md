@@ -6,17 +6,18 @@
 
 # Interactive Brokers Application
 
-Boilerplate or framework to create your own trading application or bot using Interactive Brokers gateway. Trading application consists of two docker images:
+Boilerplate to create your own trading application (bot) using Interactive Brokers gateway. Trading application involves two services:
 
-1. Docker image for IBKR gateway with IBC. I stopped maintaining my own version and instead recommend using the version from [UnstableAlpha](https://github.com/UnusualAlpha/ib-gateway-docker/tree/master)
+1. Image for IBKR gateway with IBC. I stopped maintaining my own version and instead recommend using the `stable` version from [extrange](https://github.com/extrange/ibkr-docker)
 
-2. Docker image for the python application using `ib_insync` library, which supports scheduling and can be used for trading bot.
+2. Image for the python application using `ib_insync` library, which supports scheduling.
 
 
 This repo provides several ways to deploy the application:
-- docker-compose, which can be good for local development and hosting
-- terraform for deploying on GCP IaaS (VMs)
+- docker-compose, which is recommended for local development
+- terraform for deploying on GCP IaaS using VMs
 - helm chart for deploying on Kubernetes cluster (local or PaaS)
+- (WIP) terraform for deploying on OCI using k8s
 
 # Usage
 
