@@ -1,5 +1,3 @@
-![ib-gateway-ver](https://img.shields.io/docker/v/omdv/ib-gateway?label=ib-gateway&logo=docker)
-![ib-gateway-size](https://img.shields.io/docker/image-size/omdv/ib-gateway?label=ib-gateway&logo=docker)
 ![ib-app-ver](https://img.shields.io/docker/v/omdv/ib-app?label=ib-app&logo=docker)
 ![ib-app-size](https://img.shields.io/docker/image-size/omdv/ib-app?label=ib-app&logo=docker)
 
