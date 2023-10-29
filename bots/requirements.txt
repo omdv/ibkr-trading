@@ -1,6 +1,6 @@
 ib-insync>=0.9.56
 schedule>=1.1.0
-google-cloud-storage>=1.39.0
 holidays>=0.11.1
 pytz>=2022.1
 pandas>=1.4.3
+pydantic-settings >=2.0.3<=2.1.0

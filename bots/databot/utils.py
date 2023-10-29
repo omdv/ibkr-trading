@@ -13,8 +13,8 @@ logging.basicConfig(
     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     stream=sys.stdout,
-    level=logging.DEBUG)
-logger = logging.getLogger('infobot')
+    level=logging.INFO)
+logger = logging.getLogger('databot')
 
 
 def print_elapsed_time(func):

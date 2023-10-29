@@ -15,20 +15,49 @@ services:
       TWOFA_TIMEOUT_ACTION: restart
       GATEWAY_OR_TWS: gateway
       IBC_TradingMode: ${IB_TRADING_MODE}
+    restart: always
     healthcheck:
       test: pidof java || exit 1
-      interval: 1m30s
+      interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 20s
 
-  ib-app:
-    build: ./app
+  ib-api:
+    build: ./api
+    environment:
+      - IB_GATEWAY_HOST=ib-gateway
+      - IB_GATEWAY_PORT=8888
+    ports:
+      - "127.0.0.1:8000:80"
+    volumes:
+      - ./api:/code/app
+    restart: always
+    healthcheck:
+      test: pidof python || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      ib-gateway:
+        condition: service_healthy
+
+  ib-bots:
+    build: ./bots
     environment:
       - IB_GATEWAY_HOST=ib-gateway
       - IB_GATEWAY_PORT=8888
     volumes:
+      - ./bots:/code/app
       - ./downloads:/data
+    restart: on-failure
+    healthcheck:
+      test: pidof python || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     depends_on:
       ib-gateway:
         condition: service_healthy
