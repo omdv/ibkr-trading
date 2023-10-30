@@ -18,9 +18,9 @@ gateway:
   replicaCount: 1
 
   image:
-    repository: unusualalpha/ib-gateway
+    repository: extrange/ibkr-docker
     pullPolicy: IfNotPresent
-    tag: "stable"
+    tag: "10.19"
 
   # The name of the secret containing the credentials for the gateway
   # expecting TWSUSERID and TWSPASSWORD variables
@@ -30,8 +30,7 @@ gateway:
   tradingMode: "live"
 
   ports:
-    live: "4001"
-    paper: "4002"
+    api: "8888"
 
   imagePullSecrets: []
 
@@ -59,7 +58,7 @@ application:
 
   configMapName: ""
 
-  gatewayPort: "4001"
+  gatewayPort: "8888"
 
   # needs existing claim if enabled
   persistence:

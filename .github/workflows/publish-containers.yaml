@@ -34,7 +34,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          context: ./app
+          context: ./bots
           tags: |
-            omdv/ib-app:latest
-            ghcr.io/omdv/ib-app:latest
+            omdv/ib-bots:latest
+            ghcr.io/omdv/ib-bots:latest

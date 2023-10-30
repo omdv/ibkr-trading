@@ -36,28 +36,23 @@ spec:
           image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
           ports:
-            - name: live
-              containerPort: {{ .Values.gateway.ports.live }}
-              protocol: TCP
-            - name: paper
-              containerPort: {{ .Values.gateway.ports.paper }}
+            - name: api
+              containerPort: {{ .Values.gateway.ports.api }}
               protocol: TCP
           livenessProbe:
             tcpSocket:
-              port: live
-            tcpSocket:
-              port: paper
+              port: api
           readinessProbe:
             tcpSocket:
-              port: live
-            tcpSocket:
-              port: paper
+              port: api
           envFrom:
             - secretRef:
                 name: {{ .Values.gateway.existingSecret }}
           env:
-            - name: TRADING_MODE
+            - name: IBC_TradingMode
               value: "{{ .Values.gateway.tradingMode }}"
+            - name: GATEWAY_OR_TWS
+              value: "gateway"
           resources:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
       {{- with .Values.gateway.nodeSelector }}

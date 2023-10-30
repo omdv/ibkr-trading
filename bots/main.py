@@ -38,8 +38,9 @@ if __name__ == "__main__":
     #     'trading_class': os.getenv('TRADING_CLASS', 'SPXW'),
     # }
 
-    schedule.every(5).minutes.do(bot.get_positions)
-    schedule.every(5).minutes.do(bot.get_options_chain)
+    schedule.every().hour.at(":30").do(bot.get_options_chain)
+    schedule.every().hour.at(":00").do(bot.get_options_chain)
+    schedule.every().hour.at(":00").do(bot.get_positions)
 
     logger.info("Started schedule")
     while True:

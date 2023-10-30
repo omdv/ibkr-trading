@@ -188,5 +188,5 @@ class DataBot():
         """
         filename = os.path.join(
             self.config.storage_path,
-            self._formatted_now())
+            'options_' + self._formatted_now())
         data.to_csv(f'{filename}', index=False)

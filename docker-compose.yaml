@@ -30,8 +30,8 @@ services:
       - IB_GATEWAY_PORT=8888
     ports:
       - "127.0.0.1:8000:80"
-    volumes:
-      - ./api:/code/app
+    # volumes:
+    #   - ./api:/code/app
     restart: always
     healthcheck:
       test: pidof python || exit 1
@@ -49,7 +49,7 @@ services:
       - IB_GATEWAY_HOST=ib-gateway
       - IB_GATEWAY_PORT=8888
     volumes:
-      - ./bots:/code/app
+      # - ./bots:/code/app
       - ./downloads:/data
     restart: on-failure
     healthcheck:
