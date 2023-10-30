@@ -3,5 +3,5 @@ apiVersion: v2
 name: ibkr-bot
 description: A Helm chart for Interactive Brokers bot
 type: application
-version: 0.4.1
+version: 0.4.2
 appVersion: "1.0.0"

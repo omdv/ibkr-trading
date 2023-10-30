@@ -18,7 +18,7 @@ gateway:
   replicaCount: 1
 
   image:
-    repository: extrange/ibkr-docker
+    repository: extrange/ibkr
     pullPolicy: IfNotPresent
     tag: "10.19"
 
@@ -28,6 +28,9 @@ gateway:
 
   # Expecting "paper" or "live"
   tradingMode: "live"
+
+  # Expecting "gateway" or "TWS"
+  mode: "gateway"
 
   ports:
     api: "8888"
@@ -52,7 +55,7 @@ application:
   replicaCount: 1
 
   image:
-    repository: omdv/ib-app
+    repository: omdv/ib-bots
     pullPolicy: Always
     tag: "1.0.0"
 

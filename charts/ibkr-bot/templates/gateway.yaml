@@ -54,9 +54,9 @@ spec:
                 name: {{ .Values.gateway.existingSecret }}
           env:
             - name: IBC_TradingMode
-              value: "{{ .Values.gateway.tradingMode }}"
+              value: {{ .Values.gateway.tradingMode }}
             - name: GATEWAY_OR_TWS
-              value: "gateway"
+              value: {{ .Values.gateway.mode }}
           resources:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
       {{- with .Values.gateway.nodeSelector }}
