@@ -42,9 +42,13 @@ spec:
           livenessProbe:
             tcpSocket:
               port: api
+            initialDelaySeconds: 120
+            periodSeconds: 60
           readinessProbe:
             tcpSocket:
               port: api
+            initialDelaySeconds: 30
+            periodSeconds: 10
           envFrom:
             - secretRef:
                 name: {{ .Values.gateway.existingSecret }}
