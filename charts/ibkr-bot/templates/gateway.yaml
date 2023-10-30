@@ -39,16 +39,16 @@ spec:
             - name: api
               containerPort: {{ .Values.gateway.ports.api }}
               protocol: TCP
-          livenessProbe:
-            tcpSocket:
-              port: api
-            initialDelaySeconds: 120
-            periodSeconds: 60
-          readinessProbe:
-            tcpSocket:
-              port: api
-            initialDelaySeconds: 30
-            periodSeconds: 10
+          # livenessProbe:
+          #   tcpSocket:
+          #     port: api
+          #   initialDelaySeconds: 120
+          #   periodSeconds: 60
+          # readinessProbe:
+          #   tcpSocket:
+          #     port: api
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
           envFrom:
             - secretRef:
                 name: {{ .Values.gateway.existingSecret }}
