@@ -39,7 +39,7 @@ spec:
             - name: IB_GATEWAY_HOST
               value: {{ include "ibkr.fullname" . }}-gateway.{{ .Release.Namespace }}.svc.cluster.local
             - name: IB_GATEWAY_PORT
-              value: {{ .Values.application.gatewayPort }}
+              value: '{{ .Values.application.gatewayPort }}'
           {{- if .Values.application.configMapName }}
           envFrom:
             - configMapRef:
