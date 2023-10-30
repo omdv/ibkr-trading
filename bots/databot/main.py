@@ -109,7 +109,7 @@ class DataBot():
 
         under = ib_insync.Index('SPX', 'CBOE')
         [under] = self.ibkr.qualifyContracts(under)
-        self.ibkr.reqMarketDataType(3)
+        self.ibkr.reqMarketDataType(1)
         [ticker] = self.ibkr.reqTickers(under)
         under_value = ticker.marketPrice()
         logger.debug('Underlying value: %s', under_value)
