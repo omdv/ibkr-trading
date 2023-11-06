@@ -140,8 +140,9 @@ class DataBot():
         contracts = self.ibkr.qualifyContracts(*contracts)
         logger.info('Found %s contracts', len(contracts))
 
-        tickers = self.ibkr.reqTickers(*contracts)
-        self._save_option_chain(tickers)
+        if len(contracts) > 0:
+            tickers = self.ibkr.reqTickers(*contracts)
+            self._save_option_chain(tickers)
 
     def _save_option_chain(self, tickers):
         """
@@ -178,7 +179,7 @@ class DataBot():
         switcher = {
             'file': self._save_options_to_file,
         }
-        func = switcher.get(self.config.backend, "None")
+        func = switcher.get(self.config.storage, "None")
         func(tickers)
 
 

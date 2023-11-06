@@ -25,22 +25,11 @@ if __name__ == "__main__":
     settings = Settings()
     bot = DataBot(settings)
 
-    # positions_config = copy.deepcopy(BASE_CONFIG)
-    # positions_config['download'] = {
-    #     'frequency': os.getenv('DOWNLOAD_EVERY_MINS', '5'),
-    # }
-
-    # options_config = copy.deepcopy(BASE_CONFIG)
-    # options_config['download'] = {
-    #     'frequency': os.getenv('DOWNLOAD_EVERY_MINS', '5'),
-    #     'mkt_data_type': os.getenv('MKT_DATA_TYPE', '4'),
-    #     'symbol': os.getenv('SYMBOL', 'SPX'),
-    #     'trading_class': os.getenv('TRADING_CLASS', 'SPXW'),
-    # }
-
     schedule.every().hour.at(":30").do(bot.get_options_chain)
     schedule.every().hour.at(":00").do(bot.get_options_chain)
     schedule.every().hour.at(":00").do(bot.get_positions)
+
+    # schedule.every(5).minutes.do(bot.get_options_chain)
 
     logger.info("Started schedule")
     while True:

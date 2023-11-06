@@ -39,7 +39,7 @@ def if_after_hours(timezone, now = None):
     if not now:
         now = dt.datetime.now(timezone)
 
-    logger.debug("Current time %s", now)
+    logger.info("Current time %s", now)
 
     # add 1hr before and after market close
     open_time = dt.time(hour = 8, minute = 30, second = 0)

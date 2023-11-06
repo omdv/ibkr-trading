@@ -61,3 +61,14 @@ services:
     depends_on:
       ib-gateway:
         condition: service_healthy
+
+# debug
+# docker run --name ibkr \
+# -d -p "127.0.0.1:6080:6080" \
+# -p "127.0.0.1:8888:8888" \
+# --ulimit nofile=10000 \
+# -e GATEWAY_OR_TWS=gateway \
+# -e IBC_ReadOnlyApi=no \
+# -e USERNAME=(gopass show homelab/ibkr/tws_user_id) \
+# -e PASSWORD=(gopass show homelab/ibkr/tws_user_pass) \
+# ghcr.io/extrange/ibkr:10.19
