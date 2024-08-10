@@ -1,8 +1,0 @@
-fastapi>=0.104.0
-uvicorn>=0.23.2
-ib-insync>=0.9.56
-pydantic >=2.4.2<=2.5.0
-pydantic-settings >=2.0.3<=2.1.0
-pytz >=2022.1
-nest_asyncio == 1.5.8
-pandas >=2.1.2<=2.2.0
