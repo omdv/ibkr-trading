@@ -1,0 +1,26 @@
+version: '3'
+
+env:
+  AWS_REGION: us-east-1
+  AWS_AVAILABILITY_ZONE: us-east-1a
+  GATEWAY_IMAGE: ghcr.io/extrange/ibkr:10.30
+  APP_IMAGE: ghcr.io/omdv/ib-bots:latest
+
+tasks:
+  test:
+    cmds:
+      - docker-compose up -d
+    silent: true
+
+  publish-images:
+    cmds:
+      - docker-compose push
+    silent: true
+
+  deploy:
+    cmds:
+      - pulumi up --yes
+
+  default:
+    - task: publish-images
+    - task: deploy

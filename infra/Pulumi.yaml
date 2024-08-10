@@ -1,0 +1,10 @@
+name: ibkr
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: Trading app on AWS. One virtual machine running two docker images. One image is the trading gateway. Other image is the trading application. VM not accessible from outside. Trading application has access to S3
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: ""

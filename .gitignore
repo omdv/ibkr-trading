@@ -6,3 +6,12 @@ terraform.tfstate*
 node_modules/
 __pycache__/
 poetry.lock
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml

@@ -1,0 +1,4 @@
+pulumi>=3
+pulumi_aws>=6.13.3
+pulumi_docker>=4.4.3
+pulumi_random>=4.14.0
