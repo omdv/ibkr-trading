@@ -7,6 +7,10 @@ terraform.tfstate*
 node_modules/
 __pycache__/
 poetry.lock
+
+# Jupyter
+.ipynb_checkpoints/
+
 # Devenv
 .devenv*
 devenv.local.nix
