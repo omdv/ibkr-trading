@@ -1,6 +1,7 @@
 .vscode
 .terraform/
 .terraform*
+*.log
 downloads/
 terraform.tfstate*
 node_modules/

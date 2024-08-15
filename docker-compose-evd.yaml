@@ -1,0 +1,23 @@
+---
+services:
+
+  ib-gateway:
+    image: ghcr.io/extrange/ibkr:10.30
+    ports:
+      - "127.0.0.1:6080:6080" # noVNC browser access
+      - "127.0.0.1:8888:8888" # API access
+    ulimits:
+      nofile: 10000
+    environment:
+      USERNAME: ${LIVE_USER_ID}
+      PASSWORD: ${LIVE_PASSWORD}
+      TWOFA_TIMEOUT_ACTION: restart
+      GATEWAY_OR_TWS: gateway
+      IBC_TradingMode: live
+    restart: always
+    healthcheck:
+      test: pidof java || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

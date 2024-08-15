@@ -22,8 +22,8 @@ services:
       retries: 3
       start_period: 20s
 
-  ib-app:
-    build: ./bots
+  ib-app-databot:
+    build: ./app-databot
     environment:
       - IB_GATEWAY_HOST=ib-gateway
       - IB_GATEWAY_PORT=8888

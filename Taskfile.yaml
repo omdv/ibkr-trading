@@ -7,9 +7,22 @@ env:
   APP_IMAGE: ghcr.io/omdv/ib-bots:latest
 
 tasks:
+  dev-up:
+    cmds:
+      - docker-compose -f docker-compose-evd.yaml up -d
+    env:
+      IB_GATEWAY_HOST: localhost
+      IB_GATEWAY_PORT: 8888
+    silent: true
+
+  dev-down:
+    cmds:
+      - docker-compose -f docker-compose-evd.yaml down
+    silent: true
+
   test:
     cmds:
-      - docker-compose up -d
+      - docker-compose -f docker-compose-p4d.yaml up -d
     silent: true
 
   publish-images:

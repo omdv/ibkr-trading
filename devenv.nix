@@ -4,6 +4,7 @@
     (import ./pulumi.nix { inherit pkgs; })
     pkgs.awscli2
     pkgs.go-task
+    pkgs.pre-commit
   ];
 
   dotenv = {
