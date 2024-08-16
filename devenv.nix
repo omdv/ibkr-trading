@@ -5,6 +5,7 @@
     pkgs.awscli2
     pkgs.go-task
     pkgs.pre-commit
+    pkgs.litecli
   ];
 
   dotenv = {

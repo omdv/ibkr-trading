@@ -4,14 +4,18 @@ Template for IB API trading bot.
 import time
 import logging
 import schedule
-
 from pydantic_settings import BaseSettings
+from gateway import Gateway
 
-from databot import DataBot
-from common import setup_logging
-
-setup_logging()
-logger = logging.getLogger('main')
+logging.basicConfig(
+  level=logging.INFO,
+  format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+  datefmt="%Y-%m-%d %H:%M:%S",
+  handlers=[
+      logging.FileHandler("app.log"),
+      logging.StreamHandler()
+  ])
+logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
   """
@@ -22,17 +26,14 @@ class Settings(BaseSettings):
   timezone: str = "US/Eastern"
   timeformat: str = "%Y-%m-%dT%H%M"
   storage: str = "file"
-  storage_path: str = "/data"
+  storage_path: str = "./data/state.db"
 
 if __name__ == "__main__":
   settings = Settings()
-  bot = DataBot(settings)
+  bot = Gateway(settings)
 
-  schedule.every().hour.at(":30").do(bot.get_options_chain)
-  schedule.every().hour.at(":00").do(bot.get_options_chain)
-  schedule.every().hour.at(":00").do(bot.get_positions)
-
-  # schedule.every(5).minutes.do(bot.get_options_chain)
+  schedule.every().hour.at(":00").do(bot.save_positions)
+  schedule.run_all()
 
   logger.info("Started schedule")
   while True:
