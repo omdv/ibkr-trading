@@ -16,15 +16,19 @@ pydantic = "^2.4.2"
 pydantic-settings = "^2.0.3"
 ruamel-yaml = "^0.18.6"
 sqlalchemy = "^2.0.32"
-
+sqlmodel = "^0.0.21"
 
 [tool.poetry.group.dev.dependencies]
 pylint = ">=2.14.5"
 jupyterlab = "^4.0.8"
 pulumi = "3.112.0"
 pulumi-aws = "6.28.2"
-
+ruff = "^0.6.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+indent-width = 2
+lint.ignore = ["E722"]

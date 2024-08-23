@@ -1,6 +1,7 @@
 """
 Gateway - interactions with TWS API
 """
+
 import datetime as dt
 import logging
 import ib_insync
@@ -9,12 +10,14 @@ from .positions import save_positions
 
 logger = logging.getLogger(__name__)
 
+
 class ConnectionIssue(Exception):
-  """ My custom exception class. """
+  """My custom exception class."""
 
 
-class Gateway():
+class Gateway:
   """Class representing a gateway and interactions."""
+
   def __init__(self, settings):
     self.config = settings
     self.ibkr = None
@@ -37,15 +40,15 @@ class Gateway():
 
     try:
       self.ibkr.connect(
-        host = host,
-        port = port,
-        clientId = dt.datetime.now(dt.UTC).strftime('%H%M'),
-        timeout = 15,
-        readonly = True)
+        host=host,
+        port=port,
+        clientId=dt.datetime.now(dt.UTC).strftime("%H%M"),
+        timeout=30,
+        readonly=True,
+      )
     except ConnectionIssue as e:
       logger.error("Error connecting to IB: %s", e)
-    logger.debug('Connected to IB on %s:%s', host, port)
-
+    logger.debug("Connected to IB on %s:%s", host, port)
 
   def get_positions(self):
     """
@@ -54,10 +57,9 @@ class Gateway():
     try:
       positions = self.ibkr.positions()
       return positions
-    except Exception as e: # pylint: disable=W0718
+    except Exception as e:
       logger.error("Error getting positions: %s", e)
       return []
-
 
   def save_positions(self):
     """
