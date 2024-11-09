@@ -8,7 +8,7 @@ Boilerplate to create your own trading application (bot) using Interactive Broke
 
 1. Image for IBKR gateway with IBC. I stopped maintaining my own version and instead recommend using the `stable` version from [extrange](https://github.com/extrange/ibkr-docker)
 
-2. Image for the python application using `ib_insync` library, which supports scheduling.
+2. Image for the python application using `ib_async` library, which supports scheduling.
 
 
 This repo provides several ways to deploy the application:
