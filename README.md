@@ -19,9 +19,12 @@ This repo provides several ways to deploy the application:
 
 # Usage
 
-## Docker-compose deployment
+## Local development
 
-Add your variables to `.envrc` and then `direnv allow`. Running `make dev` will start `docker-compose`.
+Add your variables to `.envrc` and then `direnv allow`. Running `task evd-up` will start TWS gateway locally in paper mode.
+
+Running `python app/main.py` will start the trading application.
+
 
 ## Helm chart deployment
 

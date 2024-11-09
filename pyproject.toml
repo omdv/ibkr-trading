@@ -7,7 +7,6 @@ license = "MIT"
 
 [tool.poetry.group.main.dependencies]
 python = "3.11.9"
-ib-insync = ">=0.9.56"
 schedule = ">=1.1.0"
 holidays = ">=0.11.1"
 pytz = ">=2022.1"
@@ -17,6 +16,8 @@ pydantic-settings = "^2.0.3"
 ruamel-yaml = "^0.18.6"
 sqlalchemy = "^2.0.32"
 sqlmodel = "^0.0.21"
+exchange-calendars = "^4.5.5"
+ib-async = "^1.0.3"
 
 [tool.poetry.group.dev.dependencies]
 pylint = ">=2.14.5"

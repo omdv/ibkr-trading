@@ -25,6 +25,6 @@
       };
     };
     libraries = with pkgs; [zlib];
-    version = "3.11";
+    version = "3.11.9";
   };
 }

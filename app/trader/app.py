@@ -1,0 +1,247 @@
+"""
+Trader module
+"""
+
+import logging
+import os
+import ib_insync
+import pandas as pd
+import numpy as np
+import datetime as dt
+import pytz
+import time
+import py_vollib_vectorized
+
+from google.cloud import firestore
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.WARNING)
+ib_insync.util.logToConsole(level=logging.WARNING)
+
+
+class NegativePrice(Exception):
+  pass
+
+
+class Bot:
+  def __init__(self, config):
+    self.config = config
+
+    self.ptf = []
+    self.options = []
+    self.ptf_stats = {}
+    self.pos_stats = {}
+
+    self.tz = pytz.timezone("US/Eastern")
+    self.tfmt = "%Y-%m-%dT%H:%M:%S%z"
+
+  def __del__(self):
+    try:
+      self.ib.disconnect()
+    except AttributeError:
+      pass
+
+  def connect_to_gateway(self):
+    """
+    Create and connect IB client
+    """
+    host = self.config["IB_GATEWAY_HOST"]
+    port = self.config["IB_GATEWAY_PORT"]
+
+    self.ib = ib_insync.IB()
+    self.ib.connect(
+      host=host,
+      port=port,
+      clientId=self.config["CLIENT_ID"],
+      timeout=15,
+      readonly=True,
+    )
+    logger.debug("Connected to IB on {}:{}.".format(host, port))
+    self.ib.reqMarketDataType(self.config["MKT_DATA_TYPE"])
+
+  def price_getter(self, obj):
+    """
+    Consistent price getter from ib_insync Ticker object
+    """
+    if obj.bid == -1.0 or obj.ask == -1.0:
+      price = obj.close
+    else:
+      price = (obj.bid + obj.ask) / 2.0
+
+    if price < 0 or np.isnan(price):
+      logger.debug("No price at {}".format(obj))
+      raise NegativePrice
+    return price
+
+  def get_state(self):
+    """
+    Handle interactions with API and raise related exceptions here
+    """
+    self.connect_to_gateway()
+
+    self.ptf = self.ib.portfolio()
+    self.options = [p.contract for p in self.ptf if p.contract.secType == "OPT"]
+    self.options = self.ib.qualifyContracts(*self.options)
+    self.tickers = self.ib.reqTickers(*self.options)
+
+    # get underlying contracts and tickers
+    underConIds = [self.ib.reqContractDetails(c)[0].underConId for c in self.options]
+    underContracts = [ib_insync.Contract(conId=c) for c in underConIds]
+    underContracts = self.ib.qualifyContracts(*underContracts)
+    underTickers = self.ib.reqTickers(*underContracts)
+
+    df_under = ib_insync.util.df(underTickers)
+    df_under["price"] = df_under.apply(self.price_getter, axis=1)
+    df_under = df_under[["contract", "price"]].add_suffix("_und")
+
+    df = pd.concat(
+      [
+        ib_insync.util.df(self.options),
+        ib_insync.util.df(self.tickers),
+        df_under,
+      ],
+      axis=1,
+    )
+
+    df["option_price"] = df.apply(self.price_getter, axis=1)
+
+    self.options = df
+    self.ib.disconnect()
+
+  def process_options(self):
+    """
+    Parse options positions in the portfolio and get greeks
+    TODO: Add checks
+    """
+    df = self.options
+    logger.debug(df.info())
+    logger.debug(df[["contract", "price_und"]])
+
+    df["risk_free_rate"] = self.config["INTEREST_RATE"]
+    df["right"] = df["right"].str.lower()
+
+    # get time to expiration in years
+    expiration = pd.to_datetime(
+      df["lastTradeDateOrContractMonth"] + "T16:00:00", errors="raise"
+    ).dt.tz_localize(tz=self.tz)
+    df["dte"] = (expiration - dt.datetime.now(tz=self.tz)) / pd.Timedelta("365 days")
+
+    py_vollib_vectorized.price_dataframe(
+      df,
+      flag_col="right",
+      underlying_price_col="price_und",
+      strike_col="strike",
+      annualized_tte_col="dte",
+      riskfree_rate_col="risk_free_rate",
+      price_col="option_price",
+      model="black_scholes",
+      inplace=True,
+    )
+
+    # merge with portfolio to get positions
+    ptf = ib_insync.util.df(self.ptf)
+    ptf["conId"] = ptf.apply(lambda x: x["contract"].conId, axis=1)
+
+    df = ptf.merge(df, on="conId", suffixes=("", "_y"), how="left")
+    df.drop(df.filter(regex="_y$").columns.tolist(), axis=1, inplace=True)
+
+    # position greeks
+    df["theta"] = df["theta"] * np.sign(df["position"])
+    df["delta"] = df["delta"] * np.sign(df["position"])
+    df["vega"] = df["vega"] * np.sign(df["position"])
+    df["gamma"] = df["gamma"] * np.sign(df["position"])
+    df["rho"] = df["rho"] * np.sign(df["position"])
+
+    logger.debug(df[["contract", "delta"]])
+
+    self.options = df
+
+  def portfolio_stats(self):
+    """
+    Calculate portfolio stats
+    """
+    df = self.options
+    ptf_theta = np.sum(
+      df["theta"] * np.abs(df["position"]) * df["multiplier"].astype(np.float32)
+    )
+
+    ptf_delta = np.sum(
+      df["delta"]
+      * np.abs(df["position"])
+      * df["multiplier"].astype(np.float32)
+      * df["price_und"]
+    )
+
+    self.ptf_stats["theta"] = ptf_theta
+    self.ptf_stats["delta"] = ptf_delta
+    self.ptf_stats["timestamp"] = dt.datetime.now(tz=self.tz).strftime(self.tfmt)
+
+  def position_stats(self):
+    """
+    Determine position stats
+    """
+    df = self.options
+    self.pos_stats["data"] = pd.pivot_table(
+      df[df.secType == "OPT"],
+      values=["delta", "theta", "gamma", "vega"],
+      index=["symbol"],
+      aggfunc="sum",
+    ).to_dict()
+    self.pos_stats["timestamp"] = dt.datetime.now(tz=self.tz).strftime(self.tfmt)
+
+  def save_state_to_firestore(self):
+    """
+    Save selected properties to firestore
+    """
+    client = firestore.Client()
+
+    doc = client.collection(self.config["FIRESTORE_COLLECTION"]).document("ptf_stats")
+    doc.set(self.ptf_stats)
+
+    doc = client.collection(self.config["FIRESTORE_COLLECTION"]).document("pos_stats")
+    doc.set(self.pos_stats)
+
+    # doc = client.collection(self.config['FIRESTORE_COLLECTION']).document(u'raw')
+    # doc.set(self.options[['contract', 'delta']].to_dict())
+
+  def run(self):
+    """
+    Run loop
+    """
+    while True:
+      try:
+        self.get_state()
+      except NegativePrice:
+        logger.warning("Skipping cycle due to NaN price")
+        time.sleep(self.config["DELAY"])
+        break
+      except ConnectionRefusedError:
+        logger.warning("Connection failed")
+        break
+
+      self.process_options()
+      self.portfolio_stats()
+      self.position_stats()
+
+      try:
+        self.save_state_to_firestore()
+      except:
+        logger.warning("Cannot save to Firestore")
+
+      time.sleep(self.config["DELAY"])
+
+
+if __name__ == "__main__":
+  config = {
+    "TRADING_MODE": os.getenv("TRADING_MODE", "paper"),
+    "IB_GATEWAY_HOST": os.getenv("IB_GATEWAY_HOST", "127.0.0.1"),
+    "IB_GATEWAY_PORT": os.getenv("IB_GATEWAY_PORT", 4001),
+    "CLIENT_ID": os.getenv("CLIENT_ID", 1010),
+    "MKT_DATA_TYPE": os.getenv("MKT_DATA_TYPE", 4),
+    "INTEREST_RATE": 0.0025,
+    "FIRESTORE_COLLECTION": "options",
+    "DELAY": 120,
+  }
+
+  bot = Bot(config)
+  bot.run()

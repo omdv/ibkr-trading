@@ -7,7 +7,7 @@ env:
   APP_IMAGE: ghcr.io/omdv/ib-bots:latest
 
 tasks:
-  dev-up:
+  evd-up:
     cmds:
       - docker-compose -f docker-compose-evd.yaml up -d
     env:
@@ -15,7 +15,7 @@ tasks:
       IB_GATEWAY_PORT: 8888
     silent: true
 
-  dev-down:
+  evd-down:
     cmds:
       - docker-compose -f docker-compose-evd.yaml down
     silent: true
