@@ -1,10 +1,17 @@
 """
-Template for IB API trading bot.
+Gateway - interactions with TWS API
 """
 
+import datetime as dt
 import logging
-from pydantic_settings import BaseSettings
-from tradingbot import TradingBot
+
+from ib_async import IB
+
+from settings import Settings
+from position_handler import parse_positions
+from trade_logic import need_to_open_spread
+from contract_handler import get_spread_to_open
+from trade_handler import trade_execution
 
 logging.basicConfig(
   level=logging.INFO,
@@ -12,27 +19,98 @@ logging.basicConfig(
   datefmt="%Y-%m-%d %H:%M:%S",
   handlers=[logging.FileHandler("app.log"), logging.StreamHandler()],
 )
-logger = logging.getLogger(__name__)
 logging.getLogger("ib_async").setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-class Settings(BaseSettings):
+class ConnectionIssue(Exception):
+  """My custom exception class."""
+
+
+class TradingBot:
   """
-  Read server settings
+  Trading bot class, which orchestrates interactions with the IB API
+  and trade logic
   """
 
-  ib_gateway_host: str
-  ib_gateway_port: str
-  timezone: str = "US/Eastern"
-  timeformat: str = "%Y-%m-%dT%H%M"
-  storage: str = "file"
-  storage_path: str = "./data/state.db"
+  def __init__(self, settings):
+    self.config = settings
+    self.ibkr = None
+    self.spreads = None
+    self.positions = None
+    self.net_value = None
+    self._connect()
+
+  def __del__(self):
+    try:
+      self.ibkr.disconnect()
+    except AttributeError:
+      pass
+
+  def _connect(self):
+    """
+    Create and connect IB client
+    """
+    host = self.config.ib_gateway_host
+    port = self.config.ib_gateway_port
+
+    self.ibkr = IB()
+
+    try:
+      self.ibkr.connect(
+        host=host,
+        port=port,
+        clientId=dt.datetime.now(dt.UTC).strftime("%H%M"),
+        timeout=120,
+        readonly=True,
+      )
+      self.ibkr.RequestTimeout = 30
+    except ConnectionIssue as e:
+      logger.error("Error connecting to IB: %s", e)
+    logger.debug("Connected to IB on %s:%s", host, port)
+
+    try:
+      self.positions = self.ibkr.positions()
+    except Exception as e:
+      logger.error("Error getting positions: %s", e)
+      raise e
+
+  def trade_loop(self):
+    """
+    Main trading loop
+    """
+
+    # Get existing option spreads
+    existing_spreads = parse_positions(self.ibkr.positions())
+    self.spreads = existing_spreads
+    logger.info("Found the following spreads: %s", existing_spreads)
+
+    # 3. Identify which spreads needs to be closed
+    # 3.1. Check trade logic - delta, etc
+    if not need_to_open_spread(self.ibkr, existing_spreads):
+      logger.info("No spreads need to be opened")
+      return
+
+    # 3.2. Close the spread with execution logic
+    if self.config.close_spread_on_expiry:
+      # TODO: implement the closing logic
+      pass
+
+    # 4. Identify which spreads needs to be opened
+    # 4.1. Check trade logic and create new contract
+    contract = get_spread_to_open(self.ibkr, existing_spreads)
+
+    # 4.2. Open the spread with execution logic - get the price, wait for the fill
+    trade_execution(self.ibkr, contract)
+
+    # 5. Logging
 
 
 if __name__ == "__main__":
   settings = Settings()
   bot = TradingBot(settings)
   bot.trade_loop()
+
   # bot.parse_positions()
   # schedule.every().hour.at(":00").do(bot.save_positions)
   # schedule.run_all()

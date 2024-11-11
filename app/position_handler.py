@@ -1,9 +1,10 @@
-from ib_async.objects import Position
 from collections import defaultdict
-from .models import OptionSpreads
+from ib_async.objects import Position
+
+from models import OptionSpreads
 
 
-def parse_positions(positions: list[Position]):
+def parse_positions(positions: list[Position]) -> list[OptionSpreads]:
   """
   Parse the positions and return option spreads
   """
@@ -26,6 +27,5 @@ def parse_positions(positions: list[Position]):
   spreads = []
   for k, v in expiries.items():
     spread = OptionSpreads(expiry=k, legs=v)
-    print(spread)
     spreads.append(spread)
   return spreads
