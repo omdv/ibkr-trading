@@ -25,10 +25,10 @@ tasks:
       - docker-compose -f docker-compose-p4d.yaml up -d
     silent: true
 
-  publish-images:
+  build-app:
     cmds:
-      - docker-compose push
-    silent: true
+      - cd app && poetry export -f requirements.txt --without-hashes --only main > requirements.txt
+      - docker build -t omdv/ib-trading-app:latest ./app
 
   deploy:
     cmds:
