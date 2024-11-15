@@ -84,6 +84,7 @@ class OptionSpreads(SQLModel, table=False):
   strike: float
   protection: float
   right: str
+  legs: list[dict]
 
   def __init__(self, expiry: str, legs: list[dict]):
     """
@@ -110,3 +111,4 @@ class OptionSpreads(SQLModel, table=False):
       self.strike = sorted_legs[0]["strike"]
     elif legs[0]["right"] == "P":
       self.strike = sorted_legs[1]["strike"]
+    self.legs = legs

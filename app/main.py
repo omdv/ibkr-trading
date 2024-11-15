@@ -4,14 +4,14 @@ Gateway - interactions with TWS API
 
 import datetime as dt
 import logging
+import schedule
+import time
 
 from ib_async import IB
 
 from settings import Settings
-from position_handler import parse_positions
+from position_handler import parse_option_spreads
 from trade_logic import need_to_open_spread
-from contract_handler import get_spread_to_open
-from trade_handler import trade_execution
 
 logging.basicConfig(
   level=logging.INFO,
@@ -81,7 +81,7 @@ class TradingBot:
     """
 
     # Get existing option spreads
-    existing_spreads = parse_positions(self.ibkr.positions())
+    existing_spreads = parse_option_spreads(self.ibkr.positions())
     self.spreads = existing_spreads
     logger.info("Found the following spreads: %s", existing_spreads)
 
@@ -98,10 +98,10 @@ class TradingBot:
 
     # 4. Identify which spreads needs to be opened
     # 4.1. Check trade logic and create new contract
-    contract = get_spread_to_open(self.ibkr, existing_spreads)
+    # contract = get_spread_to_open(self.ibkr, existing_spreads)
 
     # 4.2. Open the spread with execution logic - get the price, wait for the fill
-    trade_execution(self.ibkr, contract)
+    # trade_execution(self.ibkr, contract)
 
     # 5. Logging
 
@@ -109,13 +109,11 @@ class TradingBot:
 if __name__ == "__main__":
   settings = Settings()
   bot = TradingBot(settings)
-  bot.trade_loop()
 
-  # bot.parse_positions()
-  # schedule.every().hour.at(":00").do(bot.save_positions)
-  # schedule.run_all()
+  schedule.every(10).minutes.do(bot.trade_loop)
+  schedule.run_all()
 
-  # logger.info("Started schedule")
-  # while True:
-  #   schedule.run_pending()
-  #   time.sleep(1)
+  logger.info("Started schedule")
+  while True:
+    schedule.run_pending()
+    time.sleep(1)

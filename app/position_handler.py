@@ -4,9 +4,10 @@ from ib_async.objects import Position
 from models import OptionSpreads
 
 
-def parse_positions(positions: list[Position]) -> list[OptionSpreads]:
+def parse_option_spreads(positions: list[Position]) -> list[OptionSpreads]:
   """
   Parse the positions and return option spreads
+  TODO: move logic from the models to the position_handler
   """
   by_expiry = defaultdict(list)
   for pos in positions:
@@ -14,6 +15,7 @@ def parse_positions(positions: list[Position]) -> list[OptionSpreads]:
       if pos.contract.secType == "OPT":
         by_expiry[pos.contract.lastTradeDateOrContractMonth].append(
           {
+            "conId": pos.contract.conId,
             "symbol": pos.contract.symbol,
             "size": pos.position,
             "strike": pos.contract.strike,
