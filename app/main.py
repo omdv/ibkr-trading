@@ -11,7 +11,9 @@ from ib_async import IB
 
 from settings import Settings
 from position_handler import parse_option_spreads
+from contract_handler import get_spread_to_open
 from trade_logic import need_to_open_spread
+from message_handler import MessageHandler
 
 logging.basicConfig(
   level=logging.INFO,
@@ -19,7 +21,7 @@ logging.basicConfig(
   datefmt="%Y-%m-%d %H:%M:%S",
   handlers=[logging.FileHandler("app.log"), logging.StreamHandler()],
 )
-logging.getLogger("ib_async").setLevel(logging.INFO)
+logging.getLogger("ib_async").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
@@ -80,25 +82,29 @@ class TradingBot:
     Main trading loop
     """
 
+    # Create telegram status bot
+    status_bot = MessageHandler()
+
     # Get existing option spreads
     existing_spreads = parse_option_spreads(self.ibkr.positions())
     self.spreads = existing_spreads
     logger.info("Found the following spreads: %s", existing_spreads)
+    status_bot.send_option_spreads(existing_spreads)
 
-    # 3. Identify which spreads needs to be closed
-    # 3.1. Check trade logic - delta, etc
+    # Identify if spreads need to be opened
     if not need_to_open_spread(self.ibkr, existing_spreads):
       logger.info("No spreads need to be opened")
+      status_bot.send_notification("No spreads need to be opened")
       return
 
-    # 3.2. Close the spread with execution logic
+    # Close the spread with execution logic
     if self.config.close_spread_on_expiry:
       # TODO: implement the closing logic
       pass
 
-    # 4. Identify which spreads needs to be opened
-    # 4.1. Check trade logic and create new contract
-    # contract = get_spread_to_open(self.ibkr, existing_spreads)
+    # Identify which spreads needs to be opened
+    contract = get_spread_to_open(self.ibkr, existing_spreads)
+    logger.info("Target spread: %s", contract)
 
     # 4.2. Open the spread with execution logic - get the price, wait for the fill
     # trade_execution(self.ibkr, contract)
@@ -107,12 +113,12 @@ class TradingBot:
 
 
 if __name__ == "__main__":
+  # Create trading bot
   settings = Settings()
   bot = TradingBot(settings)
 
-  schedule.every(10).minutes.do(bot.trade_loop)
+  schedule.every(60).minutes.do(bot.trade_loop)
   schedule.run_all()
-
   logger.info("Started schedule")
   while True:
     schedule.run_pending()
