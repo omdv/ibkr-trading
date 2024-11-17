@@ -1,7 +1,8 @@
 import logging
 import datetime as dt
 
-from ib_async import IB
+import pandas as pd
+from ib_async import IB, Index
 from ib_async.contract import Contract
 from exchange_calendars import get_calendar
 
@@ -24,10 +25,20 @@ def get_contract_price(ibkr: IB, contract: Contract):
   # 2 = Frozen
   # 3 = Delayed
   # 4 = Delayed Frozen
-  ibkr.reqMarketDataType(1 if is_market_open else 3)
-
+  ibkr.reqMarketDataType(1 if is_market_open else 2)
   ticker = ibkr.reqMktData(contract)
+
+  # Wait for market data to arrive (timeout after 10 seconds)
+  timeout = 10
+  start_time = dt.datetime.now()
+  while (not ticker.last or pd.isna(ticker.last)) and (
+    dt.datetime.now() - start_time
+  ).seconds < timeout:
+    ibkr.sleep(0.1)
+
   price = ticker.last
+  if not price or pd.isna(price):
+    logger.warning("Could not get price data within timeout period")
 
   # Cancel the market data subscription when done
   ibkr.cancelMktData(contract)
@@ -43,3 +54,10 @@ def trade_execution(ibkr: IB, contract: Contract):
   # Get the price of the contract
   price = get_contract_price(ibkr, contract)
   logger.info("Contract price: %s", price)
+
+
+if __name__ == "__main__":
+  ibkr = IB()
+  ibkr.connect("localhost", 8888)
+  contract = Index("SPX", "CBOE")
+  print(get_contract_price(ibkr, contract))

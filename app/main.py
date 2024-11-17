@@ -83,7 +83,7 @@ class TradingBot:
     """
 
     # Create telegram status bot
-    status_bot = MessageHandler()
+    status_bot = MessageHandler(self.config)
 
     # Get existing option spreads
     existing_spreads = parse_option_spreads(self.ibkr.positions())
@@ -105,6 +105,7 @@ class TradingBot:
     # Identify which spreads needs to be opened
     contract = get_spread_to_open(self.ibkr, existing_spreads)
     logger.info("Target spread: %s", contract)
+    status_bot.send_target_trade(contract)
 
     # 4.2. Open the spread with execution logic - get the price, wait for the fill
     # trade_execution(self.ibkr, contract)

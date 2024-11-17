@@ -1,15 +1,16 @@
-import os
 import requests
 from typing import List
 from ib_async.contract import Contract
 
 from models import OptionSpreads
+from settings import Settings
 
 
 class MessageHandler:
-  def __init__(self):
+  def __init__(self, settings: Settings):
     # Replace Twilio initialization with ntfy topic
-    self.ntfy_topic = os.getenv("NOTIFYSH_TOPIC")
+    self.ntfy_topic = settings.ntfy_topic
+    self.ntfy_enabled = settings.ntfy_enabled
     self.ntfy_url = f"https://ntfy.sh/{self.ntfy_topic}"
 
   def send_option_spreads(self, positions: List[OptionSpreads]) -> None:
@@ -19,8 +20,16 @@ class MessageHandler:
     message_body = self._format_option_spreads(positions)
     self._send_message(message_body)
 
+  def send_target_trade(self, contract: Contract) -> None:
+    """Send target trade update via ntfy.sh"""
+    message_body = self._format_contract_message(contract)
+    self._send_message(message_body)
+
   def _send_message(self, message: str, priority: str = "default") -> None:
     """Helper method to send message via ntfy.sh"""
+    if not self.ntfy_enabled:
+      return
+
     try:
       requests.post(
         self.ntfy_url,

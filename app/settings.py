@@ -13,3 +13,5 @@ class Settings(BaseSettings):
   storage: str = "file"
   storage_path: str = "./data/state.db"
   close_spread_on_expiry: bool = False
+  ntfy_topic: str
+  ntfy_enabled: bool

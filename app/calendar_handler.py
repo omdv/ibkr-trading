@@ -9,8 +9,11 @@ def next_trading_day() -> str:
   nyse = get_calendar("XNYS")  # NYSE (New York Stock Exchange) calendar
   today = dt.datetime.now()
 
-  # Get the next trading day's end
-  next_session = nyse.next_session(today.strftime("%Y-%m-%d"))
-  next_trading_day = next_session.strftime("%Y%m%d")
+  # Find the next valid trading day
+  next_trading_day = nyse.next_open(today).strftime("%Y%m%d")
 
   return next_trading_day
+
+
+if __name__ == "__main__":
+  print(next_trading_day())

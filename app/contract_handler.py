@@ -6,7 +6,8 @@ from ib_async.util import df
 
 from models import OptionSpreads
 from calendar_handler import next_trading_day
-from trade_logic import need_to_open_spread, target_delta, target_protection
+from trade_logic import target_delta, target_protection
+from trade_handler import get_contract_price
 
 logger = logging.getLogger(__name__)
 
@@ -14,11 +15,13 @@ logger = logging.getLogger(__name__)
 def get_short_leg_contract(ibkr: IB, expiry: str) -> Contract:
   """
   Get the short leg contract
+  TODO: Model Greeks vs Last Greeks?
   """
   # Create a contract for SPX
   spx = Index("SPX", "CBOE")
   ibkr.qualifyContracts(spx)
-  underlying_price = ibkr.reqTickers(spx)[0].marketPrice()
+  underlying_price = get_contract_price(ibkr, spx)
+  logger.info("Underlying price: %s", underlying_price)
 
   # Request option chain
   chains = ibkr.reqSecDefOptParams(spx.symbol, "", spx.secType, spx.conId)
@@ -28,7 +31,7 @@ def get_short_leg_contract(ibkr: IB, expiry: str) -> Contract:
   strikes = [
     s
     for s in sorted(chain.strikes)
-    if s < underlying_price and s > underlying_price * 0.9
+    if s < underlying_price and s > underlying_price * 0.93
   ]
   expirations = [e for e in chain.expirations if e == expiry]
   puts = [
@@ -42,19 +45,14 @@ def get_short_leg_contract(ibkr: IB, expiry: str) -> Contract:
   # Get tickers with greeks
   tickers = ibkr.reqTickers(*puts)
   contracts = df([t.contract for t in tickers])
-  model_greeks = df([t.modelGreeks for t in tickers])
-  last_greeks = df([t.lastGreeks for t in tickers])
 
-  # Join contracts with model_greeks first, then with last_greeks
-  contracts = contracts.merge(
-    model_greeks, left_index=True, right_index=True, suffixes=("", "_model")
-  )
-  contracts = contracts.merge(
-    last_greeks, left_index=True, right_index=True, suffixes=("", "_last")
-  )
+  try:
+    model_greeks = df([t.modelGreeks for t in tickers])
+    contracts = contracts.merge(model_greeks, left_index=True, right_index=True)
+  except TypeError:
+    logger.warning("No model greeks available")
 
-  # Filter out puts with delta greater than target delta and get the shprt_contract
-  contracts = contracts[contracts["delta_last"] > target_delta()]
+  contracts = contracts[contracts["delta"] > target_delta()]
   strike = contracts.iloc[-1].strike
   short_contract = [e for e in puts if e.strike == strike][0]
 
@@ -124,12 +122,14 @@ def get_spread_to_open(ibkr: IB, spreads: list[OptionSpreads]) -> Contract:
   Determine which spread to open
   """
 
-  if not need_to_open_spread(ibkr, spreads):
-    return None
+  # if not need_to_open_spread(ibkr, spreads):
+  #   return None
 
   expiry = next_trading_day()
   short_leg = get_short_leg_contract(ibkr, expiry)
+  logger.debug("Short leg: %s", short_leg)
   long_leg = get_long_leg_contract(ibkr, expiry, short_leg)
+  logger.debug("Long leg: %s", long_leg)
   contract = get_spread_contract(ibkr, expiry, short_leg, long_leg)
 
   return contract
