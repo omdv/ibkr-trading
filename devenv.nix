@@ -6,6 +6,8 @@
     pkgs.go-task
     pkgs.pre-commit
     pkgs.litecli
+    pkgs.git-crypt
+    pkgs.kubernetes-helm
   ];
 
   dotenv = {

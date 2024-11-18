@@ -1,5 +1,5 @@
-![ib-app-ver](https://img.shields.io/docker/v/omdv/ib-app?label=ib-app&logo=docker)
-![ib-app-size](https://img.shields.io/docker/image-size/omdv/ib-app?label=ib-app&logo=docker)
+![ib-trading-app-ver](https://img.shields.io/docker/v/omdv/ib-trading-app?label=ib-trading-app&logo=docker)
+![ib-trading-app-size](https://img.shields.io/docker/image-size/omdv/ib-trading-app?label=ib-trading-app&logo=docker)
 
 
 # Interactive Brokers Application
@@ -14,7 +14,7 @@ Boilerplate to create your own trading application (bot) using Interactive Broke
 This repo provides several ways to deploy the application:
 - docker-compose, which is recommended for local development
 - terraform for deploying on GCP IaaS using VMs
-- helm chart for deploying on Kubernetes cluster (local or PaaS)
+- helm chart for deploying on Kubernetes cluster
 - (WIP) terraform for deploying on OCI using k8s
 
 # Usage

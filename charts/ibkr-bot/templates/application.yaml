@@ -39,13 +39,15 @@ spec:
             - name: IB_GATEWAY_HOST
               value: {{ include "ibkr.fullname" . }}-gateway.{{ .Release.Namespace }}.svc.cluster.local
             - name: IB_GATEWAY_PORT
-              value: '{{ .Values.application.gatewayPort }}'
+              value: "8888"
           {{- if .Values.application.configMapName }}
           envFrom:
             - configMapRef:
                 name: {{ .Values.application.configMapName }}
+            - secretRef:
+                name: {{ .Values.application.existingSecret }}
           {{- end}}
-          {{- if .Values.application.persistence }}
+          {{- if .Values.application.persistence.enabled }}
           volumeMounts:
             - mountPath: {{ .Values.application.persistence.mountPath }}
               name: volume
@@ -64,7 +66,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.application.persistence }}
+      {{- if .Values.application.persistence.enabled }}
       volumes:
         - name: volume
           persistentVolumeClaim:

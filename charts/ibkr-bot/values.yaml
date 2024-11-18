@@ -1,86 +1,61 @@
 ---
-# Default values for ibkr-trading.
-
 nameOverride: ""
 fullnameOverride: "ibkr-bot"
 
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
   name: ""
-
 
 gateway:
   replicaCount: 1
-
   image:
-    repository: extrange/ibkr
+    repository: ghcr.io/extrange/ibkr
     pullPolicy: IfNotPresent
-    tag: "10.19"
+    tag: "10.32.1l"
 
   # The name of the secret containing the credentials for the gateway
-  # expecting TWSUSERID and TWSPASSWORD variables
-  existingSecret: "ibkr-secret"
+  # expecting USERNAME and PASSWORD variables
+  existingSecret: "ibkr-gateway-secret"
 
-  # Expecting "paper" or "live"
-  tradingMode: "live"
-
-  # Expecting "gateway" or "TWS"
-  mode: "gateway"
-
+  parameters:
+    TWOFA_TIMEOUT_ACTION: "restart"
+    GATEWAY_OR_TWS: "gateway"
+    IBC_TradingMode: "live"
+    IBC_ReadOnlyApi: "no"
+    IBC_ReloginAfterSecondFactorAuthenticationTimeout: "yes"
   ports:
     api: "8888"
-
+    vnc: "6080"
   imagePullSecrets: []
-
   podAnnotations: {}
-
   podSecurityContext: {}
-
   securityContext: {}
-
   resources: {}
-
   nodeSelector: {}
-
   tolerations: []
-
   affinity: {}
 
 application:
   replicaCount: 1
-
   image:
-    repository: omdv/ib-bots
+    repository: ghcr.io/omdv/ib-trading-app
     pullPolicy: Always
-    tag: "1.0.0"
-
-  configMapName: ""
-
-  gatewayPort: "8888"
+    tag: "latest"
+  existingConfigMap: "ibkr-app-config"
+  existingSecret: "ibkr-app-secret"
 
   # needs existing claim if enabled
   persistence:
-    enabled: true
-    existingClaim: "pvc-ibkr"
+    enabled: false
+    existingClaim: ""
     mountPath: "/data"
 
   imagePullSecrets: []
-
   podAnnotations: {}
-
   podSecurityContext: {}
-
   securityContext: {}
-
   resources: {}
-
   nodeSelector: {}
-
   tolerations: []
-
   affinity: {}

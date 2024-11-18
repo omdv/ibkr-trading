@@ -12,6 +12,10 @@ spec:
       targetPort: api
       protocol: TCP
       name: api
+    - port: {{ .Values.gateway.ports.vnc }}
+      targetPort: vnc
+      protocol: TCP
+      name: vnc
   selector:
     {{- include "ibkr.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: "gateway"
+    app.kubernetes.io/component: gateway

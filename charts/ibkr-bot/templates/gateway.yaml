@@ -39,6 +39,9 @@ spec:
             - name: api
               containerPort: {{ .Values.gateway.ports.api }}
               protocol: TCP
+            - name: vnc
+              containerPort: {{ .Values.gateway.ports.vnc }}
+              protocol: TCP
           # livenessProbe:
           #   tcpSocket:
           #     port: api
@@ -53,10 +56,16 @@ spec:
             - secretRef:
                 name: {{ .Values.gateway.existingSecret }}
           env:
-            - name: IBC_TradingMode
-              value: {{ .Values.gateway.tradingMode }}
             - name: GATEWAY_OR_TWS
-              value: {{ .Values.gateway.mode }}
+              value: {{ .Values.gateway.parameters.GATEWAY_OR_TWS | quote }}
+            - name: TWOFA_TIMEOUT_ACTION
+              value: {{ .Values.gateway.parameters.TWOFA_TIMEOUT_ACTION | quote }}
+            - name: IBC_TradingMode
+              value: {{ .Values.gateway.parameters.IBC_TradingMode | quote }}
+            - name: IBC_ReadOnlyApi
+              value: {{ .Values.gateway.parameters.IBC_ReadOnlyApi | quote }}
+            - name: IBC_ReloginAfterSecondFactorAuthenticationTimeout
+              value: {{ .Values.gateway.parameters.IBC_ReloginAfterSecondFactorAuthenticationTimeout | quote }}
           resources:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
       {{- with .Values.gateway.nodeSelector }}

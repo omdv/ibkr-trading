@@ -8,6 +8,7 @@ terraform.tfstate*
 node_modules/
 __pycache__/
 poetry.lock
+secrets.yaml
 data/
 
 # Jupyter
