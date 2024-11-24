@@ -25,6 +25,8 @@ jupyterlab = "^4.0.8"
 pulumi = "3.112.0"
 pulumi-aws = "6.28.2"
 ruff = "^0.6.2"
+python-telegram-bot = "^21.7"
+twilio = "^9.3.6"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
