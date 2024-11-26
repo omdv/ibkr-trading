@@ -36,5 +36,5 @@ jobs:
           push: true
           context: ./app
           tags: |
-            omdv/ib-trading-app:latest
-            ghcr.io/omdv/ib-trading-app:latest
+            omdv/ib-trading-app-demo:latest
+            ghcr.io/omdv/ib-trading-app-demo:latest

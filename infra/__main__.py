@@ -11,7 +11,7 @@ import dc_helper as dch
 
 config = cfg.read_config()
 
-aws.config.region = config['aws_region']
+aws.config.region = config["aws_region"]
 
 dc = dch.get_docker_compose(config)
 instance = ec2h.create_ec2(config, dc)
