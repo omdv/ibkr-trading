@@ -10,10 +10,11 @@ import time
 from ib_async import IB
 
 from settings import Settings
-from position_handler import parse_option_spreads
-from contract_handler import get_spread_to_open
-from trade_logic import need_to_open_spread
-from message_handler import MessageHandler
+from trade_logic import need_to_open_spread, get_spread_to_open
+
+from services.positions import PositionsService
+from messaging.ntfy import MessageHandler
+from mocks.ib_mock import MockIB
 
 logging.basicConfig(
   level=logging.INFO,
@@ -35,13 +36,13 @@ class TradingBot:
   and trade logic
   """
 
-  def __init__(self, settings):
+  def __init__(self, settings, mock_data_path=None):
     self.config = settings
     self.ibkr = None
     self.spreads = None
     self.positions = None
     self.net_value = None
-    self._connect()
+    self._connect(mock_data_path)
 
   def __del__(self):
     try:
@@ -49,14 +50,17 @@ class TradingBot:
     except AttributeError:
       pass
 
-  def _connect(self):
+  def _connect(self, mock_data_path=None):
     """
     Create and connect IB client
     """
     host = self.config.ib_gateway_host
     port = self.config.ib_gateway_port
 
-    self.ibkr = IB()
+    if mock_data_path:
+      self.ibkr = MockIB(mock_data_path)
+    else:
+      self.ibkr = IB()
 
     try:
       self.ibkr.connect(
@@ -86,10 +90,12 @@ class TradingBot:
     status_bot = MessageHandler(self.config)
 
     # Get existing option spreads
-    existing_spreads = parse_option_spreads(self.ibkr.positions())
+    positions_service = PositionsService(self.ibkr, self.positions)
+    existing_spreads = positions_service.get_option_spreads()
     self.spreads = existing_spreads
-    logger.info("Found the following spreads: %s", existing_spreads)
-    status_bot.send_option_spreads(existing_spreads)
+    for spread in self.spreads:
+      logger.info("Found spread: %s", spread)
+    status_bot.send_positions(existing_spreads)
 
     # Identify if spreads need to be opened
     if not need_to_open_spread(self.ibkr, existing_spreads):
@@ -105,18 +111,19 @@ class TradingBot:
     # Identify which spreads needs to be opened
     contract = get_spread_to_open(self.ibkr, existing_spreads)
     logger.info("Target spread: %s", contract)
-    status_bot.send_target_trade(contract)
+    status_bot.send_target_spread(contract)
 
-    # 4.2. Open the spread with execution logic - get the price, wait for the fill
-    # trade_execution(self.ibkr, contract)
-
-    # 5. Logging
+    # # Open the spread with execution logic
+    # spread_service = OptionSpreadService(self.ibkr, contract)
+    # current_price = spread_service.get_current_price()
+    # logger.info("Current price of the target spread: %s", current_price)
+    # spread_service.trade_spread()
 
 
 if __name__ == "__main__":
   # Create trading bot
   settings = Settings()
-  bot = TradingBot(settings)
+  bot = TradingBot(settings, mock_data_path="./data/positions.pickle")
 
   schedule.every(60).minutes.do(bot.trade_loop)
   schedule.run_all()

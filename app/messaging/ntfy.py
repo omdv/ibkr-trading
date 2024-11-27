@@ -1,28 +1,29 @@
+"""
+Send messages via ntfy.sh
+"""
+
 import requests
 from typing import List
 from ib_async.contract import Contract
 
-from models import OptionSpreads
+from models import OptionSpread
 from settings import Settings
 
 
 class MessageHandler:
   def __init__(self, settings: Settings):
-    # Replace Twilio initialization with ntfy topic
     self.ntfy_topic = settings.ntfy_topic
     self.ntfy_enabled = settings.ntfy_enabled
     self.ntfy_url = f"https://ntfy.sh/{self.ntfy_topic}"
 
-  def send_option_spreads(self, positions: List[OptionSpreads]) -> None:
-    """
-    Send option spreads update via ntfy.sh
-    """
+  def send_positions(self, positions: List[OptionSpread]) -> None:
+    """Send option spreads update via ntfy.sh"""
     message_body = self._format_option_spreads(positions)
     self._send_message(message_body)
 
-  def send_target_trade(self, contract: Contract) -> None:
-    """Send target trade update via ntfy.sh"""
-    message_body = self._format_contract_message(contract)
+  def send_target_spread(self, contract: Contract) -> None:
+    """Send target spread update via ntfy.sh"""
+    message_body = self._format_option_spread(contract)
     self._send_message(message_body)
 
   def _send_message(self, message: str, priority: str = "default") -> None:
@@ -43,19 +44,16 @@ class MessageHandler:
     except Exception as e:
       print(f"Failed to send notification: {str(e)}")
 
-  def _format_option_spreads(self, positions: List[OptionSpreads]) -> str:
-    """Format position information into readable message"""
-    message = "Current Option Spreads:\n"
+  def _format_option_spreads(self, positions: List[OptionSpread]) -> str:
+    """Format multiple option spreads into readable message"""
+    message = "Current positions:\n"
     for position in positions:
-      message += f"{position.expiry}: {position.symbol} - {position.size} x {position.strike} {position.right}\n"
+      message += self._format_option_spread(position)
     return message
 
-  def _format_contract_message(self, contract: Contract) -> str:
-    """Format contract information into readable message"""
-    message = f"Target Spread: {contract.symbol}\n"
-    message += f"Expiry: {contract.lastTradeDateOrContractMonth}\n"
-    message += f"Strike: {contract.strike}\n"
-    message += f"Right: {contract.right}\n"
+  def _format_option_spread(self, spread: OptionSpread) -> str:
+    """Format one option spread into readable message"""
+    message = f"{str(spread)}\n"
     return message
 
   def send_alert(self, alert_message: str) -> None:

@@ -1,78 +1,45 @@
 """
-Data models
+Data models only
 """
 
-import datetime as dt
-from typing import Optional
 from sqlmodel import Field, SQLModel
-from ib_async.objects import Position
-from ib_async.contract import Contract
+from ib_async.contract import Option
 
 
-class Contracts(SQLModel, table=True):
+class PositionOption(Option):
   """
-  Contracts SQLModel
-  """
-
-  id: int = Field(primary_key=True)
-  symbol: str
-  sec_type: str
-  currency: str
-  exchange: Optional[str] = None
-  multiplier: Optional[str] = None
-  expiry: Optional[str] = None
-  strike: Optional[float] = None
-  right: Optional[str] = None
-  trading_class: Optional[str] = None
-  local_symbol: Optional[str] = None
-
-  def __init__(self, contract: Contract):
-    self.id = contract.conId
-    self.symbol = contract.symbol
-    self.sec_type = contract.secType
-    self.currency = contract.currency
-    self.exchange = contract.exchange
-    self.multiplier = contract.multiplier
-    self.expiry = contract.lastTradeDateOrContractMonth
-    self.strike = contract.strike
-    self.right = contract.right
-    self.trading_class = contract.tradingClass
-    self.local_symbol = contract.localSymbol
-
-
-class Positions(SQLModel, table=True):
-  """
-  Positions SQLModel
+  Extended Option class that includes position size
   """
 
-  id: int = Field(primary_key=True)
-  timestamp: int
-  account: str
-  contract_id: int
-  contract_type: str
-  symbol: str
-  expiry: Optional[str] = None
-  strike: Optional[float] = None
-  right: Optional[str] = None
-  trading_class: Optional[str] = None
-  position: float
-  avg_cost: float
+  def __init__(self, option: Option, position_size: float):
+    super().__init__(
+      conId=option.conId,
+      symbol=option.symbol,
+      lastTradeDateOrContractMonth=option.lastTradeDateOrContractMonth,
+      strike=option.strike,
+      tradingClass=option.tradingClass,
+      right=option.right,
+      multiplier=option.multiplier,
+      exchange=option.exchange,
+      currency=option.currency,
+      localSymbol=option.localSymbol,
+    )
+    self.position_size = position_size
 
-  def __init__(self, position: Position):
-    self.timestamp = dt.datetime.now().timestamp()
-    self.account = position.account
-    self.contract_id = position.contract.conId
-    self.contract_type = position.contract.secType
-    self.symbol = position.contract.symbol
-    self.expiry = position.contract.lastTradeDateOrContractMonth
-    self.strike = position.contract.strike
-    self.right = position.contract.right
-    self.trading_class = position.contract.tradingClass
-    self.position = position.position
-    self.avg_cost = position.avgCost
+  def to_dict(self):
+    base_dict = super().to_dict() if hasattr(super(), "to_dict") else vars(super())
+    return {**base_dict, "position_size": self.position_size}
+
+  def __str__(self) -> str:
+    """Return a string representation of the PositionOption"""
+    return self.localSymbol.replace(" ", "")
+
+  def __repr__(self) -> str:
+    """Return a string representation of the PositionOption"""
+    return f"PositionOption(localSymbol={self.localSymbol}, position_size={self.position_size})"
 
 
-class OptionSpreads(SQLModel, table=False):
+class OptionSpread(SQLModel, table=False):
   """
   OptionSpread SQLModel
   """
@@ -80,35 +47,57 @@ class OptionSpreads(SQLModel, table=False):
   id: int = Field(primary_key=True)
   expiry: str
   symbol: str
+  tradingClass: str
   size: float
   strike: float
   protection: float
   right: str
-  legs: list[dict]
+  legs: list[PositionOption]
 
-  def __init__(self, expiry: str, legs: list[dict]):
-    """
-    Logic to build the spread
-    """
-    self.expiry = expiry
-    self.symbol = legs[0]["symbol"]
-
-    # checks
+  @staticmethod
+  def validate_legs(legs: list[PositionOption]) -> bool:
+    """Validate the legs of the spread"""
     if len(legs) != 2:
-      return None
-    if legs[0]["size"] + legs[1]["size"] != 0:
-      return None
-    if legs[0]["right"] != legs[1]["right"]:
-      return None
+      raise ValueError("Spread must have exactly 2 legs")
 
-    sorted_legs = sorted(legs, key=lambda x: x["strike"])
+    if legs[0].position_size + legs[1].position_size != 0:
+      raise ValueError("Legs must have opposite sizes")
 
-    self.size = abs(legs[0]["size"])
-    self.right = legs[0]["right"]
-    self.protection = abs(sorted_legs[0]["strike"] - sorted_legs[1]["strike"])
+    if legs[0].right != legs[1].right:
+      raise ValueError("Both legs must be the same type (calls or puts)")
 
-    if legs[0]["right"] == "C":
-      self.strike = sorted_legs[0]["strike"]
-    elif legs[0]["right"] == "P":
-      self.strike = sorted_legs[1]["strike"]
-    self.legs = legs
+    return True
+
+  def __init__(self, legs: list[PositionOption]):
+    """Initialize an option spread"""
+    self.validate_legs(legs)
+
+    self.legs = sorted(legs, key=lambda x: x.position_size)
+
+    self.expiry = self.legs[0].lastTradeDateOrContractMonth
+    self.symbol = self.legs[0].symbol
+    self.size = self.legs[0].position_size
+    self.right = self.legs[0].right
+    self.protection = abs(self.legs[0].strike - self.legs[1].strike)
+    self.strike = (
+      self.legs[0].strike if self.legs[0].right == "P" else self.legs[1].strike
+    )
+    self.tradingClass = self.legs[0].tradingClass
+
+  def __str__(self) -> str:
+    """Return a string description of the spread"""
+    return f"{self.size} x {self.legs[0]}|{str(self.legs[1])[-8:]}"
+
+  def __repr__(self) -> str:
+    """Return a string representation of the OptionSpread"""
+    return f"OptionSpread(legs={self.legs})"
+
+
+if __name__ == "__main__":
+  option = Option(
+    symbol="AAPL", right="C", strike=150, lastTradeDateOrContractMonth="20241213"
+  )
+  print("Option dict:", option.__dict__)
+
+  position_option = PositionOption(option=option, position_size=100)
+  print("PositionOption dict:", position_option.__dict__)
