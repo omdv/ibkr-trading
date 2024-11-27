@@ -2,45 +2,59 @@
 ![ib-trading-app-size](https://img.shields.io/docker/image-size/omdv/ib-trading-app?label=ib-trading-app&logo=docker)
 
 
-# Interactive Brokers Application
+# Description
 
-Boilerplate to create your own trading application (bot) using Interactive Brokers gateway. Trading application involves two services:
+This is the boilerplate or framework to create your own trading application with Interactive Brokers. It is **not** a finished product - the provided example will work end-to-end, but you are expected to add your own trading logic and workflow. This said, I do use it for my own trading and will continue adding some key elements, without exposing my own algorithm.
 
-1. Image for IBKR gateway with IBC. I stopped maintaining my own version and instead recommend using the `stable` version from [extrange](https://github.com/extrange/ibkr-docker)
+The **systematic** approach to trading requires your trading application to have several services. I designed this framework to be modular, loosely coupled and containerized:
 
-2. Image for the python application using `ib_async` library, which supports scheduling.
+1. You will need the IBKR gateway to provide the API. [IBC](https://github.com/IbcAlpha/IBC) emerged as the default way to manage the IBKR gateway. Still, this setup is finicky, especially when containerized. After many months I stopped maintaining my own docker image and recommend using the image from [extrange](https://github.com/extrange/ibkr-docker), which is quite stable, as long as you include health checks to ensure it restarts on failure and use right settings to restart if you miss the MFA window.
+
+2. The main "know-how" - the image of the trading application itself. I use `ib_async` library with scheduler. You can see the example of the end-to-end implementation in `app` folder. You will need to modify it and add github workflow to build your custom image.
+
+3. Storage and messaging backends. I recommend using `ntfy.sh` service, which is free and nothing short of amazing. Just make sure you select an obfuscated name for your topic.
+
+4. Backtesting backend. You need to track the performance of your strategy and compare it with the *theoretical* performance. I developed my own backend for backtesting options strategy, using duckdb, sql and arrows, instead of pandas for significant performance boost. I will try to open portions of my backtest repo in the future.
 
 
-This repo provides several ways to deploy the application:
-- docker-compose, which is recommended for local development
-- terraform for deploying on GCP IaaS using VMs
-- helm chart for deploying on Kubernetes cluster
-- (WIP) terraform for deploying on OCI using k8s
+# Tech stack
+- `devenv` and `poetry` for reproducible dev environment
+- `duckdb` for storage and analytics
+- `docker-compose` or `helm chart` for deployment
+- `pulumi` or `terraform` for infrastructure-as-a-code
 
 # Usage
 
-## Local development
+Utility will be limited, unless you build your own trading application. This said below are some general notes on deployment and usage.
 
-Add your variables to `.envrc` and then `direnv allow`. Running `task evd-up` will start TWS gateway locally in paper mode.
+### Local development
 
-Running `python app/main.py` will start the trading application.
+Local deployment is using docker-compose. Add your variables to `.envrc`, `direnv allow`. Running `task evd-up` will start TWS gateway locally. `python app/main.py` will start the trading application. There is a mock class available to mock the `IB` API.
 
 
-## Helm chart deployment
+### AWS deployment
 
-Add repo and find the latest version.
+My preferred way to run it is with docker-compose on a single EC2 instance. I use `pulumi` for IaaC. Instructions to be added...
+
+
+### Helm chart deployment
+
+There is a helm chart, if you prefer k8s.
 
 ```bash
 helm repo add ibkr-trading https://omdv.github.io/ibkr-trading/
 helm search repo ibkr-trading
 ```
+OCI has a very generous free tier and I was successful deploying this chart within it, however it proved to be too much hassle. Chart will be supported, but not updated frequently.
 
-## GCP deployment
 
-This repository has Terraform recipes for GCP. It is based on two separate VMs hosting gateway and application containers, connected via VPC. Such separation allows to remove concerns around security by making gateway accessible only by trading application via internal network. Trading application is expected (at least at the moment) to be stateless with the hope to make it serverless in the future.
+### GCP deployment with Terraform
 
-To deploy you will need to expose the following env variables or enter them in console during terraform application:
+My first deployment outside of local was on GCP with Terraform. It was based on two separate VMs hosting gateway and application containers, connected via VPC.
 
+I will **not support** this moving forward.
+
+Expected env variables:
 ```bash
 export TF_VAR_TWS_USER_ID = <your-TWS-login>
 export TF_VAR_TWS_PASSWORD = <your-TWS-pass>
@@ -48,7 +62,7 @@ export TF_VAR_TRADING_MODE = <"paper" or "live">
 export TF_VAR_project_id = <your-GCP-project-id>
 ```
 
-Review and deploy Terraform plan:
+Review and deploy:
 
 ```bash
 cd ./deployments/google
@@ -57,13 +71,6 @@ terraform plan
 terraform apply
 ```
 
-# Development
-
-## Dependencies
-
-Some recommended dependencies for pre-commit hooks.
-- `pre-commit`
-- `ripsecrets`
 
 ## Troubleshooting / Usefull snippets
 
@@ -78,3 +85,4 @@ Inspired by the following projects:
 
 - [IBC and TWS on ubuntu](https://dimon.ca/how-to-setup-ibc-and-tws-on-headless-ubuntu-in-10-minutes)
 - [IBGateway docker image for GCP](https://github.com/dvasdekis/ib-gateway-docker-gcp)
+- [Systematic trading](https://www.amazon.com/Systematic-Trading-designing-trading-investing/dp/0857194453)
