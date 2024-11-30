@@ -77,8 +77,9 @@ def gen_tickers():
           theta=0.5,
           undPrice=100.0,
         ),
-        ask=1.05 - 0.001 * strike,
-        bid=0.95 - 0.001 * strike,
+        ask=round(strike * 0.01005, 2),
+        bid=round(strike * 0.01001, 2),
+        last=round(strike * 0.01003, 2),
       )
     )
 

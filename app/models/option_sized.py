@@ -7,7 +7,7 @@ from sqlalchemy.types import TypeDecorator
 from ib_async.contract import Option
 
 
-class PositionOptionListEncoder(TypeDecorator):
+class OptionWithSizeListEncoder(TypeDecorator):
   """Enables binary storage by encoding and decoding on the fly."""
 
   impl = JSON
@@ -20,16 +20,16 @@ class PositionOptionListEncoder(TypeDecorator):
 
   def process_result_value(self, value, dialect):
     if value is not None:
-      from .position_option import (
-        PositionOption,
+      from .option_sized import (
+        OptionWithSize,
       )  # Import here to avoid circular imports
 
       packed = base64.b64decode(value.encode())
-      return [PositionOption.from_dict(leg) for leg in msgpack.unpackb(packed)]
+      return [OptionWithSize.from_dict(leg) for leg in msgpack.unpackb(packed)]
     return None
 
 
-class PositionOption(Option):
+class OptionWithSize(Option):
   """
   Custom Option class that includes position size
   """
@@ -50,8 +50,8 @@ class PositionOption(Option):
     self.position_size = position_size
 
   @classmethod
-  def from_dict(cls, data: dict) -> "PositionOption":
-    """Create PositionOption from a dictionary"""
+  def from_dict(cls, data: dict) -> "OptionWithSize":
+    """Create OptionWithSize from a dictionary"""
     option = Option(
       conId=data.get("conId"),
       symbol=data["symbol"],
@@ -74,9 +74,9 @@ class PositionOption(Option):
     return json.dumps(self.to_dict())
 
   def __str__(self) -> str:
-    """Return a string representation of the PositionOption"""
+    """Return a string representation of the OptionWithSize"""
     return self.localSymbol.replace(" ", "")
 
   def __repr__(self) -> str:
-    """Return a string representation of the PositionOption"""
-    return f"PositionOption(localSymbol={self.localSymbol}, position_size={self.position_size})"
+    """Return a string representation of the OptionWithSize"""
+    return f"OptionWithSize(localSymbol={self.localSymbol}, position_size={self.position_size})"

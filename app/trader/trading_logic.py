@@ -4,7 +4,7 @@ from ib_async import IB, Index
 from ib_async.contract import Option, Contract
 from ib_async.util import df
 
-from models import OptionSpread, PositionOption
+from models import OptionSpread, OptionWithSize
 from services.option_spread import OptionSpreadService
 from services.contract import ContractService
 from exchange_calendars import get_calendar
@@ -175,16 +175,16 @@ def get_spread_to_open(ibkr: IB, spreads: list[OptionSpread]) -> OptionSpread:
 
   expiry = next_trading_day()
   short_leg = _short_leg_contract_to_open(ibkr, expiry)
-  logger.info("Short leg: %s", short_leg)
+  logger.debug("Short leg: %s", short_leg)
   long_leg = _long_leg_contract_to_open(ibkr, expiry, short_leg)
-  logger.info("Long leg: %s", long_leg)
+  logger.debug("Long leg: %s", long_leg)
 
   # assign size to the legs
   legs = [
-    PositionOption(position_size=-position_size(ibkr), option=short_leg),
-    PositionOption(position_size=+position_size(ibkr), option=long_leg),
+    OptionWithSize(position_size=-position_size(ibkr), option=short_leg),
+    OptionWithSize(position_size=+position_size(ibkr), option=long_leg),
   ]
-  logger.info("Legs: %s", legs)
+  logger.debug("Legs: %s", legs)
 
   spread = OptionSpread(legs=legs)
   return spread

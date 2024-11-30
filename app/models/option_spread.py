@@ -1,5 +1,5 @@
 from sqlmodel import Field, SQLModel
-from .position_option import PositionOption, PositionOptionListEncoder
+from .option_sized import OptionWithSize, OptionWithSizeListEncoder
 from storage.db import DB
 
 
@@ -18,10 +18,10 @@ class OptionSpread(SQLModel, table=True):
   strike: float
   protection: float
   right: str
-  legs: list[PositionOption] = Field(sa_type=PositionOptionListEncoder)
+  legs: list[OptionWithSize] = Field(sa_type=OptionWithSizeListEncoder)
 
   @staticmethod
-  def validate_legs(legs: list[PositionOption]) -> bool:
+  def validate_legs(legs: list[OptionWithSize]) -> bool:
     """Validate the legs of the spread"""
     if len(legs) != 2:
       raise ValueError("Spread must have exactly 2 legs")
@@ -34,7 +34,7 @@ class OptionSpread(SQLModel, table=True):
 
     return True
 
-  def __init__(self, legs: list[PositionOption]):
+  def __init__(self, legs: list[OptionWithSize]):
     """Initialize an option spread"""
     self.validate_legs(legs)
 

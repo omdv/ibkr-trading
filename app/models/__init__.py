@@ -1,4 +1,4 @@
-from .position_option import PositionOption
+from .option_sized import OptionWithSize
 from .option_spread import OptionSpread
 
-__all__ = ["PositionOption", "OptionSpread"]
+__all__ = ["OptionWithSize", "OptionSpread"]

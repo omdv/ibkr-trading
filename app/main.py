@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 if __name__ == "__main__":
   # Create trading bot
   settings = Settings()
-  bot = TradingBot(settings, mock_data_path="./mock_data")
+  bot = TradingBot(settings, mocked=True)
 
   schedule.every(60).minutes.do(bot.trade_loop)
   schedule.run_all()

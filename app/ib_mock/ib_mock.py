@@ -1,35 +1,21 @@
 import logging
-import pickle
 from ib_async import IB
 from ib_async.objects import AccountValue
+from ib_async.contract import ContractDetails, Contract
+from ib_async.order import Order
 
 from .gen_positions import gen_positions
 from .gen_tickers import gen_tickers
 from .gen_option_chain import gen_option_chain
-from .common import contract_id
+from .gen_trades import gen_trades
+from .common import contract_id, local_symbol
 
 logger = logging.getLogger(__name__)
 
 
 class MockIB(IB):
-  def __init__(self, pickle_dir=None):
+  def __init__(self):
     super().__init__()
-    self.pickle_dir = pickle_dir
-    self._positions = []
-    if pickle_dir:
-      self._load_pickle_data()
-
-  def _load_pickle_data(self):
-    """Load mock data from pickle files"""
-    try:
-      with open(f"{self.pickle_dir}/positions.pickle", "rb") as f:
-        self._positions = pickle.load(f)
-      with open(f"{self.pickle_dir}/trades.pickle", "rb") as f:
-        self._trades = pickle.load(f)
-    except FileNotFoundError as e:
-      print(f"Warning: Could not load pickle data: {e}")
-    except Exception as e:
-      print(f"Error loading pickle data: {e}")
 
   def connect(self, *args, **kwargs):
     """Mock connect - always succeeds"""
@@ -46,7 +32,19 @@ class MockIB(IB):
     logger.debug("Mocking qualifyContracts for contracts: %s", args)
     for arg in args:
       arg.conId = contract_id(arg)
+      arg.localSymbol = local_symbol(arg)
     return args
+
+  def reqContractDetails(self, *args, **kwargs):
+    """Mock reqContractDetails - return mocked contract details"""
+    logger.debug("Mocking reqContractDetails for contracts: %s", args)
+    contract_details = []
+    for arg in args:
+      cd = ContractDetails(contract=arg)
+      cd.contract.conId = contract_id(arg)
+      cd.contract.localSymbol = local_symbol(arg)
+      contract_details.append(cd)
+    return contract_details
 
   def reqMarketDataType(self, *args, **kwargs):
     """Mock reqMarketDataType - always succeeds"""
@@ -83,10 +81,11 @@ class MockIB(IB):
     logger.debug("Mocking cancelMktData for contract: %s", args[0].conId)
     return True
 
-  def placeOrder(self, *args, **kwargs):
+  def placeOrder(self, contract: Contract, order: Order):
     """Mock placeOrder - return pickled trade"""
-    logger.debug("Mocking placeOrder for order: %s", args[0])
-    return self._trades
+    logger.debug("Mocking placeOrder for contract: %s, order: %s", contract, order)
+    trade = gen_trades(contract, order)
+    return trade
 
   def accountValues(self, *args, **kwargs):
     """Mock accountValues - return mocked account values"""

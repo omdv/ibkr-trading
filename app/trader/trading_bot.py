@@ -23,14 +23,14 @@ class TradingBot:
   and trade logic
   """
 
-  def __init__(self, settings, mock_data_path=None):
+  def __init__(self, settings, mocked=False):
     self.config = settings
     self.ibkr = None
     self.spreads = None
     self.positions = None
     self.net_value = None
     self.db = DB(self.config)
-    self._connect(mock_data_path)
+    self._connect(mocked)
 
   def __del__(self):
     try:
@@ -38,15 +38,15 @@ class TradingBot:
     except AttributeError:
       pass
 
-  def _connect(self, mock_data_path=None):
+  def _connect(self, mocked=False):
     """
     Create and connect IB client
     """
     host = self.config.ib_gateway_host
     port = self.config.ib_gateway_port
 
-    if mock_data_path:
-      self.ibkr = MockIB(mock_data_path)
+    if mocked:
+      self.ibkr = MockIB()
     else:
       self.ibkr = IB()
 

@@ -25,7 +25,7 @@ class OptionSpreadService:
       if leg.position_size < 0:
         short_contract_id = leg.conId
         break
-    logger.info("Short contract ID: %s", short_contract_id)
+
     contract = Contract(conId=short_contract_id, exchange="SMART")
     self.ibkr.qualifyContracts(contract)
     return contract

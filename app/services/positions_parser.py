@@ -1,7 +1,7 @@
 import logging
 import pandas as pd
 from ib_async import IB, Position
-from models import OptionSpread, PositionOption
+from models import OptionSpread, OptionWithSize
 
 logger = logging.getLogger(__name__)
 
@@ -37,9 +37,9 @@ class PositionsService:
       if len(group) > 1:  # Only create spreads with multiple legs
         legs = []
         for leg_data in group.to_dict("records"):
-          position_option = PositionOption(
+          option_with_size = OptionWithSize(
             option=leg_data["contract"], position_size=leg_data["position_size"]
           )
-          legs.append(position_option)
+          legs.append(option_with_size)
         spreads.append(OptionSpread(legs=legs))
     return spreads
