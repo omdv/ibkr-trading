@@ -23,7 +23,7 @@ class PositionsService:
         option_positions.append(
           {
             "contract": pos.contract,
-            "position_size": float(pos.position),
+            "position_size": int(pos.position),
             "symbol": pos.contract.symbol,
             "expiry": pos.contract.lastTradeDateOrContractMonth,
           }

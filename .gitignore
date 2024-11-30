@@ -10,6 +10,7 @@ __pycache__/
 poetry.lock
 secrets.yaml
 data/
+mock_data/
 
 # Jupyter
 .ipynb_checkpoints/

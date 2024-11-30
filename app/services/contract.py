@@ -34,8 +34,8 @@ class ContractService:
     # Request market data
     ticker = self.ibkr.reqMktData(self.contract)
 
-    # Wait for market data to arrive (timeout after 10 seconds)
-    timeout = 10
+    # Wait for market data to arrive (timeout after 20 seconds)
+    timeout = 20
     start_time = dt.datetime.now()
     while (not ticker.last or pd.isna(ticker.last)) and (
       dt.datetime.now() - start_time

@@ -9,6 +9,7 @@ from services.option_spread import OptionSpreadService
 from services.contract import ContractService
 from exchange_calendars import get_calendar
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,7 +47,7 @@ def need_to_open_spread(ibkr: IB, spreads: list[OptionSpread]):
     if spreads[0].expiry == today:
       option_spread_service = OptionSpreadService(ibkr, spreads[0])
       current_delta = option_spread_service.get_spread_delta()
-      logger.debug("Current delta: %s", current_delta)
+      logger.info("Current delta: %s", current_delta)
 
       if current_delta > -0.02:
         return_flag = True
@@ -67,7 +68,7 @@ def target_delta() -> float:
   return -0.06
 
 
-def target_protection() -> float:
+def target_protection() -> int:
   """
   Target protection
   TODO: add the logic here
@@ -88,7 +89,7 @@ def position_size(ibkr: IB) -> int:
     ][0].value
   )
   position_size = round(net_value * 0.25 / target_protection() / 100)
-  return position_size
+  return int(position_size)
 
 
 def _short_leg_contract_to_open(ibkr: IB, expiry: str) -> Contract:
@@ -174,15 +175,16 @@ def get_spread_to_open(ibkr: IB, spreads: list[OptionSpread]) -> OptionSpread:
 
   expiry = next_trading_day()
   short_leg = _short_leg_contract_to_open(ibkr, expiry)
-  logger.debug("Short leg: %s", short_leg)
+  logger.info("Short leg: %s", short_leg)
   long_leg = _long_leg_contract_to_open(ibkr, expiry, short_leg)
-  logger.debug("Long leg: %s", long_leg)
+  logger.info("Long leg: %s", long_leg)
 
   # assign size to the legs
   legs = [
     PositionOption(position_size=-position_size(ibkr), option=short_leg),
     PositionOption(position_size=+position_size(ibkr), option=long_leg),
   ]
+  logger.info("Legs: %s", legs)
 
   spread = OptionSpread(legs=legs)
   return spread

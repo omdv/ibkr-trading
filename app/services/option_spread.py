@@ -17,25 +17,15 @@ class OptionSpreadService:
     self.ibkr = ibkr
     self.spread = option_spread
 
-  def get_spread_delta(self) -> float:
-    """
-    Get the delta for the spread
-    """
-    short_contract = self.get_short_leg_contract()
-    self.ibkr.reqMktData(short_contract)
-    ticker = self.ibkr.reqTickers(short_contract)
-    self.ibkr.cancelMktData(short_contract)
-    return ticker[0].modelGreeks.delta
-
   def get_short_leg_contract(self) -> Contract:
     """
     Get the short leg contract
     """
     for leg in self.spread.legs:
       if leg.position_size < 0:
-        short_contract_id = leg.option.conId
+        short_contract_id = leg.conId
         break
-
+    logger.info("Short contract ID: %s", short_contract_id)
     contract = Contract(conId=short_contract_id, exchange="SMART")
     self.ibkr.qualifyContracts(contract)
     return contract
@@ -46,7 +36,7 @@ class OptionSpreadService:
     """
     for leg in self.spread.legs:
       if leg.position_size > 0:
-        long_contract_id = leg.option.conId
+        long_contract_id = leg.conId
         break
 
     contract = Contract(conId=long_contract_id, exchange="SMART")
@@ -102,6 +92,17 @@ class OptionSpreadService:
 
     return price
 
+  def get_spread_delta(self) -> float:
+    """
+    Get the delta for the spread
+    TODO: modelGreeks vs lastGreeks
+    """
+    short_contract = self.get_short_leg_contract()
+    self.ibkr.reqMktData(short_contract)
+    ticker = self.ibkr.reqTickers(short_contract)
+    self.ibkr.cancelMktData(short_contract)
+    return ticker[0].modelGreeks.delta
+
   def trade_spread(self) -> None:
     """
     Trade the spread with price adjustment logic if the order doesn't fill
@@ -140,6 +141,13 @@ class OptionSpreadService:
         timeout -= 1
 
       if filled:
+        import pickle
+        from datetime import datetime
+
+        with open(
+          f'./data/trade-{datetime.now().strftime("%Y%m%d-%H%M%S")}.pkl', "wb"
+        ) as f:
+          pickle.dump(trade, f)
         break
 
       # If not filled, adjust price upward
