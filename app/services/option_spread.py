@@ -141,13 +141,6 @@ class OptionSpreadService:
         timeout -= 1
 
       if filled:
-        import pickle
-        from datetime import datetime
-
-        with open(
-          f'./data/trade-{datetime.now().strftime("%Y%m%d-%H%M%S")}.pkl', "wb"
-        ) as f:
-          pickle.dump(trade, f)
         break
 
       # If not filled, adjust price upward

@@ -82,7 +82,7 @@ class MockIB(IB):
     return True
 
   def placeOrder(self, contract: Contract, order: Order):
-    """Mock placeOrder - return pickled trade"""
+    """Mock placeOrder - return mocked trade"""
     logger.debug("Mocking placeOrder for contract: %s, order: %s", contract, order)
     trade = gen_trades(contract, order)
     return trade
