@@ -1,16 +1,15 @@
-import logging
 import datetime as dt
-from storage.db import DB
-from ib_async import IB
+from loguru import logger
 
+from ib_async import IB
+from ib_mock import MockIB
+
+from storage.db import DB
 from services.positions_parser import PositionsService
 from services.option_spread import OptionSpreadService
 from messaging.ntfy import MessageHandler
+from models.filled_trade import FilledTrade
 from .trading_logic import need_to_open_spread, get_spread_to_open
-from ib_mock import MockIB
-
-
-logger = logging.getLogger(__name__)
 
 
 class ConnectionIssue(Exception):
@@ -60,13 +59,13 @@ class TradingBot:
       )
       self.ibkr.RequestTimeout = 30
     except ConnectionIssue as e:
-      logger.error("Error connecting to IB: %s", e)
-    logger.debug("Connected to IB on %s:%s", host, port)
+      logger.error("Error connecting to IB: {}", e)
+    logger.debug("Connected to IB on {}:{}", host, port)
 
     try:
       self.positions = self.ibkr.positions()
     except Exception as e:
-      logger.error("Error getting positions: %s", e)
+      logger.error("Error getting positions: {}", e)
       raise e
 
   def trade_loop(self):
@@ -82,7 +81,7 @@ class TradingBot:
     existing_spreads = positions_service.get_option_spreads()
     self.spreads = existing_spreads
     for spread in self.spreads:
-      logger.info("Found spread: %s", spread)
+      logger.info("Found spread: {}", spread)
       spread.save(self.db)
     status_bot.send_positions(existing_spreads)
 
@@ -99,11 +98,15 @@ class TradingBot:
 
     # Identify which spreads needs to be opened
     contract = get_spread_to_open(self.ibkr, existing_spreads)
-    logger.info("Target spread: %s", contract)
+    logger.info("Target spread: {}", contract)
     status_bot.send_target_spread(contract)
 
     # Open the spread with execution logic
     spread_service = OptionSpreadService(self.ibkr, contract)
     current_price = spread_service.get_current_price()
-    logger.info("Current price of the target spread: %s", current_price)
-    spread_service.trade_spread()
+    logger.info("Current price of the target spread: {}", current_price)
+    trade = spread_service.trade_spread()
+    # Save the filled trade to the database
+    if trade:
+      filled_trade = FilledTrade(contract, trade)
+      filled_trade.save(self.db)

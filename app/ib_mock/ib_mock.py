@@ -1,4 +1,5 @@
-import logging
+from loguru import logger
+
 from ib_async import IB
 from ib_async.objects import AccountValue
 from ib_async.contract import ContractDetails, Contract
@@ -9,8 +10,6 @@ from .gen_tickers import gen_tickers
 from .gen_option_chain import gen_option_chain
 from .gen_trades import gen_trades
 from .common import contract_id, local_symbol
-
-logger = logging.getLogger(__name__)
 
 
 class MockIB(IB):
@@ -29,7 +28,7 @@ class MockIB(IB):
 
   def qualifyContracts(self, *args, **kwargs):
     """Mock qualifyContracts"""
-    logger.debug("Mocking qualifyContracts for contracts: %s", args)
+    logger.debug("Mocking qualifyContracts for contracts: {}", args)
     for arg in args:
       arg.conId = contract_id(arg)
       arg.localSymbol = local_symbol(arg)
@@ -37,7 +36,7 @@ class MockIB(IB):
 
   def reqContractDetails(self, *args, **kwargs):
     """Mock reqContractDetails - return mocked contract details"""
-    logger.debug("Mocking reqContractDetails for contracts: %s", args)
+    logger.debug("Mocking reqContractDetails for contracts: {}", args)
     contract_details = []
     for arg in args:
       cd = ContractDetails(contract=arg)
@@ -53,7 +52,7 @@ class MockIB(IB):
 
   def reqTickers(self, *args, **kwargs):
     """Mock reqTickers - return mocked ticker"""
-    logger.debug("Mocking tickers for contracts: %s", args)
+    logger.debug("Mocking tickers for contracts: {}", args)
     mock_tickers = gen_tickers()
     result = []
     for arg in args:
@@ -63,27 +62,27 @@ class MockIB(IB):
 
   def reqMktData(self, contract):
     """Mock reqMktData - always succeeds"""
-    logger.debug("Mocking reqMktData for contract: %s", contract.conId)
+    logger.debug("Mocking reqMktData for contract: {}", contract.conId)
     mock_tickers = gen_tickers()
     if contract.conId in mock_tickers:
-      logger.debug("Mocking reqMktData for contract: %s", mock_tickers[contract.conId])
+      logger.debug("Mocking reqMktData for contract: {}", mock_tickers[contract.conId])
       return mock_tickers[contract.conId]
     else:
       return None
 
   def reqSecDefOptParams(self, *args, **kwargs):
     """Mock reqSecDefOptParams - return mocked option chain"""
-    logger.debug("Mocking reqSecDefOptParams for contract: %s", args[0])
+    logger.debug("Mocking reqSecDefOptParams for contract: {}", args[0])
     return gen_option_chain()
 
   def cancelMktData(self, *args, **kwargs):
     """Mock cancelMktData - always succeeds"""
-    logger.debug("Mocking cancelMktData for contract: %s", args[0].conId)
+    logger.debug("Mocking cancelMktData for contract: {}", args[0].conId)
     return True
 
   def placeOrder(self, contract: Contract, order: Order):
     """Mock placeOrder - return mocked trade"""
-    logger.debug("Mocking placeOrder for contract: %s, order: %s", contract, order)
+    logger.debug("Mocking placeOrder for contract: {}, order: {}", contract, order)
     trade = gen_trades(contract, order)
     return trade
 

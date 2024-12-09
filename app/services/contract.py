@@ -1,10 +1,8 @@
-import logging
+from loguru import logger
 import datetime as dt
 import pandas as pd
 from ib_async import IB, Contract
 from exchange_calendars import get_calendar
-
-logger = logging.getLogger(__name__)
 
 
 class ContractService:
@@ -16,14 +14,14 @@ class ContractService:
     """
     Get the current price of the contract
     """
-    logger.debug("Getting price for contract: %s", self.contract)
-    logger.debug("Contract conId: %s", self.contract.conId)
+    logger.debug("Getting price for contract: {}", self.contract)
+    logger.debug("Contract conId: {}", self.contract.conId)
 
     # Check if market is open
     nyse = get_calendar("XNYS")
     current_time = dt.datetime.now(dt.UTC)
     is_market_open = nyse.is_open_on_minute(current_time)
-    logger.debug("Market is open: %s", is_market_open)
+    logger.debug("Market is open: {}", is_market_open)
 
     # Set market data type based on market status
     self.ibkr.reqMarketDataType(1 if is_market_open else 2)

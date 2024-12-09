@@ -5,6 +5,7 @@ Option spread related services
 import logging
 
 from ib_async import Contract, IB, ComboLeg, Order
+from ib_async.order import Trade
 
 from models import OptionSpread
 from services.contract import ContractService
@@ -72,7 +73,7 @@ class OptionSpreadService:
     contract.comboLegs = legs
 
     # Log contract details
-    logger.debug("Target spread: %s", contract)
+    logger.debug("Target spread: {}", contract)
 
     return contract
 
@@ -103,7 +104,7 @@ class OptionSpreadService:
     self.ibkr.cancelMktData(short_contract)
     return ticker[0].modelGreeks.delta
 
-  def trade_spread(self) -> None:
+  def trade_spread(self) -> Trade:
     """
     Trade the spread with price adjustment logic if the order doesn't fill
     """
@@ -119,7 +120,7 @@ class OptionSpreadService:
     order.lmtPrice = current_price
 
     logger.info(
-      "Placing order for spread: %s x %s at %s",
+      "Placing order for spread: {} x {} at {}",
       spread_contract,
       self.spread.size,
       current_price,
@@ -133,7 +134,7 @@ class OptionSpreadService:
 
       while timeout > 0 and not filled:
         if trade.orderStatus.status == "Filled":
-          logger.info("Order filled at %s", trade.orderStatus.avgFillPrice)
+          logger.info("Order filled at {}", trade.orderStatus.avgFillPrice)
           filled = True
           break
 
@@ -141,12 +142,12 @@ class OptionSpreadService:
         timeout -= 1
 
       if filled:
-        break
+        return trade
 
       # If not filled, adjust price upward
       new_price = order.lmtPrice + price_increment
       logger.info(
-        "Order not filled after %d seconds. Adjusting price to %s", 30, new_price
+        "Order not filled after %d seconds. Adjusting price to {}", 30, new_price
       )
 
       # Cancel existing order
@@ -159,3 +160,4 @@ class OptionSpreadService:
     if not filled:
       logger.warning("Failed to execute spread trade after %d attempts", max_attempts)
       self.ibkr.cancelOrder(trade.order)
+      return None

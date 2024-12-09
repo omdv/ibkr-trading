@@ -1,9 +1,6 @@
-import logging
 import pandas as pd
 from ib_async import IB, Position
 from models import OptionSpread, OptionWithSize
-
-logger = logging.getLogger(__name__)
 
 
 class PositionsService:

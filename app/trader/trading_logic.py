@@ -1,5 +1,5 @@
-import logging
 import datetime as dt
+from loguru import logger
 from ib_async import IB, Index
 from ib_async.contract import Option, Contract
 from ib_async.util import df
@@ -8,9 +8,6 @@ from models import OptionSpread, OptionWithSize
 from services.option_spread import OptionSpreadService
 from services.contract import ContractService
 from exchange_calendars import get_calendar
-
-
-logger = logging.getLogger(__name__)
 
 
 def next_trading_day() -> str:
@@ -24,7 +21,7 @@ def next_trading_day() -> str:
   next_trading_day = nyse.next_open(today.date() + dt.timedelta(days=1)).strftime(
     "%Y%m%d"
   )
-  logger.debug("Next trading day: %s", next_trading_day)
+  logger.debug("Next trading day: {}", next_trading_day)
 
   return next_trading_day
 
@@ -47,7 +44,7 @@ def need_to_open_spread(ibkr: IB, spreads: list[OptionSpread]):
     if spreads[0].expiry == today:
       option_spread_service = OptionSpreadService(ibkr, spreads[0])
       current_delta = option_spread_service.get_spread_delta()
-      logger.info("Current delta: %s", current_delta)
+      logger.info("Current delta: {}", current_delta)
 
       if current_delta > -0.02:
         return_flag = True
@@ -65,12 +62,12 @@ def target_delta() -> float:
   TODO: add the logic here
 
   """
-  return -0.06
+  return -0.05
 
 
-def target_protection() -> int:
+def target_width() -> int:
   """
-  Target protection
+  Target width
   TODO: add the logic here
   """
   return 100
@@ -81,6 +78,8 @@ def position_size(ibkr: IB) -> int:
   Position size
   TODO: add the logic here
   """
+
+  # Get the net value
   net_value = float(
     [
       v
@@ -88,7 +87,12 @@ def position_size(ibkr: IB) -> int:
       if v.tag == "NetLiquidationByCurrency" and v.currency == "BASE"
     ][0].value
   )
-  position_size = round(net_value * 0.25 / target_protection() / 100)
+
+  # Calculate the position size
+  kelly_factor = 0.25
+  multiplier = 100
+
+  position_size = round(net_value * kelly_factor / target_width() / multiplier)
   return int(position_size)
 
 
@@ -138,7 +142,7 @@ def _short_leg_contract_to_open(ibkr: IB, expiry: str) -> Contract:
   strike = contracts.iloc[-1].strike
   short_contract = [e for e in puts if e.strike == strike][0]
 
-  logger.debug("Target short contract: %s", short_contract)
+  logger.debug("Target short contract: {}", short_contract)
   return short_contract
 
 
@@ -151,7 +155,7 @@ def _long_leg_contract_to_open(
   # TODO: check that the strike exists in the chain
 
   short_strike = short_contract.strike
-  long_strike = short_strike - target_protection()
+  long_strike = short_strike - target_width()
 
   long_contract = Option(
     symbol="SPX",
@@ -164,7 +168,7 @@ def _long_leg_contract_to_open(
     currency="USD",
   )
   long_contract = ibkr.qualifyContracts(long_contract)[0]
-  logger.debug("Target long contract: %s", long_contract)
+  logger.debug("Target long contract: {}", long_contract)
   return long_contract
 
 
@@ -175,25 +179,24 @@ def get_spread_to_open(ibkr: IB, spreads: list[OptionSpread]) -> OptionSpread:
 
   expiry = next_trading_day()
   short_leg = _short_leg_contract_to_open(ibkr, expiry)
-  logger.debug("Short leg: %s", short_leg)
+  logger.debug("Short leg: {}", short_leg)
   long_leg = _long_leg_contract_to_open(ibkr, expiry, short_leg)
-  logger.debug("Long leg: %s", long_leg)
+  logger.debug("Long leg: {}", long_leg)
 
   # assign size to the legs
   legs = [
     OptionWithSize(position_size=-position_size(ibkr), option=short_leg),
     OptionWithSize(position_size=+position_size(ibkr), option=long_leg),
   ]
-  logger.debug("Legs: %s", legs)
+  logger.debug("Legs: {}", legs)
 
   spread = OptionSpread(legs=legs)
   return spread
 
 
 if __name__ == "__main__":
-  logging.basicConfig(level=logging.INFO)
   ibkr = IB()
   ibkr.connect("localhost", 8888)
   contract = get_spread_to_open(ibkr, [])
-  logger.info("Target spread: %s", contract)
+  logger.info("Target spread: {}", contract)
   ibkr.disconnect()

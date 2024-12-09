@@ -1,4 +1,6 @@
+import datetime as dt
 from sqlmodel import Field, SQLModel
+
 from .option_sized import OptionWithSize, OptionWithSizeListEncoder
 from storage.db import DB
 
@@ -10,13 +12,15 @@ class OptionSpread(SQLModel, table=True):
 
   __tablename__ = "option_spreads"
 
+  timestamp: dt.datetime = Field(default_factory=dt.datetime.now)
+
   id: int = Field(primary_key=True)
   expiry: str
   symbol: str
   tradingClass: str
   size: int
   strike: float
-  protection: float
+  width: float
   right: str
   legs: list[OptionWithSize] = Field(sa_type=OptionWithSizeListEncoder)
 
@@ -44,7 +48,7 @@ class OptionSpread(SQLModel, table=True):
     self.symbol = self.legs[0].symbol
     self.size = abs(self.legs[0].position_size)
     self.right = self.legs[0].right
-    self.protection = abs(self.legs[0].strike - self.legs[1].strike)
+    self.width = abs(self.legs[0].strike - self.legs[1].strike)
     self.strike = (
       self.legs[0].strike if self.legs[0].right == "P" else self.legs[1].strike
     )
@@ -52,7 +56,7 @@ class OptionSpread(SQLModel, table=True):
 
   def __str__(self) -> str:
     """Return a string description of the spread"""
-    return f"{self.legs[0].position_size} x {self.legs[0]}|{str(self.legs[1])[-8:]}"
+    return f"SELL {self.legs[0]}|BUY {str(self.legs[1])[-8:]}"
 
   def __repr__(self) -> str:
     """Return a string representation of the OptionSpread"""
