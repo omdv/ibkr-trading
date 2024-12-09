@@ -1,0 +1,12 @@
+---
+name: docker-compose-vps
+runtime:
+  name: python
+  options:
+    toolchain: pip
+    virtualenv: venv
+description: Docker-compose app on VPS
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: https://www.pulumi.com/ai/api/project/4f29cef9-2f38-4195-9a19-6343d30881d2.zip

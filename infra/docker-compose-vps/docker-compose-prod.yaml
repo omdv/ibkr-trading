@@ -1,0 +1,51 @@
+---
+services:
+  ib-gateway:
+    image: ghcr.io/extrange/ibkr:10.32
+    ports:
+      - 127.0.0.1:6080:6080     # noVNC browser access
+      - 127.0.0.1:8888:8888     # API access
+    ulimits:
+      nofile: 10000
+    environment:
+      USERNAME: ${IBKR_USER}
+      PASSWORD: ${IBKR_PASSWORD}
+      TWOFA_TIMEOUT_ACTION: restart
+      GATEWAY_OR_TWS: gateway
+      IBC_TradingMode: live
+      IBC_ReadOnlyApi: "no"
+      IBC_ReloginAfterSecondFactorAuthenticationTimeout: "yes"
+    restart: always
+    healthcheck:
+      test: pidof java || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  ib-app:
+    image: ghcr.io/omdv/ib-trading-app:latest
+    environment:
+      - IB_GATEWAY_HOST=ib-gateway
+      - IB_GATEWAY_PORT=8888
+    volumes:
+      - ./downloads:/data
+    restart: on-failure
+    healthcheck:
+      test: pidof python || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      ib-gateway:
+        condition: service_healthy
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    environment:
+      - REPO_USER=${GH_USER}
+      - REPO_PASS=${GH_TOKEN}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 300 --cleanup

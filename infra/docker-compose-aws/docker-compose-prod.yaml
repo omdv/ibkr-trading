@@ -1,10 +1,10 @@
+---
 services:
-
   ib-gateway:
-    image:
+    image: ghcr.io/extrange/ibkr:latest
     ports:
-    - 127.0.0.1:6080:6080     # noVNC browser access
-    - 127.0.0.1:8888:8888     # API access
+      - 127.0.0.1:6080:6080     # noVNC browser access
+      - 127.0.0.1:8888:8888     # API access
     ulimits:
       nofile: 10000
     environment:
@@ -13,6 +13,8 @@ services:
       TWOFA_TIMEOUT_ACTION: restart
       GATEWAY_OR_TWS: gateway
       IBC_TradingMode: paper
+      IBC_ReadOnlyApi: no
+      IBC_ReloginAfterSecondFactorAuthenticationTimeout: yes
     restart: always
     healthcheck:
       test: pidof java || exit 1
@@ -22,12 +24,12 @@ services:
       start_period: 20s
 
   ib-app:
-    image:
+    image: ghcr.io/omdv/ib-trading-app:latest
     environment:
-    - IB_GATEWAY_HOST=ib-gateway
-    - IB_GATEWAY_PORT=8888
+      - IB_GATEWAY_HOST=ib-gateway
+      - IB_GATEWAY_PORT=8888
     volumes:
-    - ./downloads:/data
+      - ./downloads:/data
     restart: on-failure
     healthcheck:
       test: pidof python || exit 1
