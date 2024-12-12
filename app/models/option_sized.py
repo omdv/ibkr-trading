@@ -34,7 +34,7 @@ class OptionWithSize(Option):
   Custom Option class that includes position size
   """
 
-  def __init__(self, option: Option, position_size: int):
+  def __init__(self, option: Option, position_size: int, delta: float):
     super().__init__(
       conId=option.conId,
       symbol=option.symbol,
@@ -48,6 +48,7 @@ class OptionWithSize(Option):
       localSymbol=option.localSymbol,
     )
     self.position_size = position_size
+    self.delta = delta
 
   @classmethod
   def from_dict(cls, data: dict) -> "OptionWithSize":
@@ -64,7 +65,11 @@ class OptionWithSize(Option):
       currency=data.get("currency", "USD"),
       localSymbol=data.get("localSymbol", ""),
     )
-    return cls(option=option, position_size=data["position_size"])
+    return cls(
+      option=option,
+      position_size=data["position_size"],
+      delta=data["delta"],
+    )
 
   def to_dict(self):
     base_dict = super().to_dict() if hasattr(super(), "to_dict") else vars(super())

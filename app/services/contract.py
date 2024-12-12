@@ -2,7 +2,7 @@ from loguru import logger
 import datetime as dt
 import pandas as pd
 from ib_async import IB, Contract
-from exchange_calendars import get_calendar
+from services.utilities import is_market_open
 
 
 class ContractService:
@@ -17,14 +17,8 @@ class ContractService:
     logger.debug("Getting price for contract: {}", self.contract)
     logger.debug("Contract conId: {}", self.contract.conId)
 
-    # Check if market is open
-    nyse = get_calendar("XNYS")
-    current_time = dt.datetime.now(dt.UTC)
-    is_market_open = nyse.is_open_on_minute(current_time)
-    logger.debug("Market is open: {}", is_market_open)
-
     # Set market data type based on market status
-    self.ibkr.reqMarketDataType(1 if is_market_open else 2)
+    self.ibkr.reqMarketDataType(1 if is_market_open(self.ibkr) else 2)
 
     # Qualify the contract
     self.ibkr.qualifyContracts(self.contract)
@@ -42,7 +36,7 @@ class ContractService:
 
     price = getattr(ticker, price_type)
     if not price or pd.isna(price):
-      logger.warning("Could not get price data within timeout period")
+      logger.error("Could not get price data within timeout period")
 
     # Cancel the market data subscription when done
     self.ibkr.cancelMktData(self.contract)

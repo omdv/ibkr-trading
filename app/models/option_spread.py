@@ -21,6 +21,7 @@ class OptionSpread(SQLModel, table=True):
   size: int
   strike: float
   width: float
+  delta: float
   right: str
   legs: list[OptionWithSize] = Field(sa_type=OptionWithSizeListEncoder)
 
@@ -53,10 +54,11 @@ class OptionSpread(SQLModel, table=True):
       self.legs[0].strike if self.legs[0].right == "P" else self.legs[1].strike
     )
     self.tradingClass = self.legs[0].tradingClass
+    self.delta = self.legs[0].delta
 
   def __str__(self) -> str:
     """Return a string description of the spread"""
-    return f"SELL {self.legs[0]}|BUY {str(self.legs[1])[-8:]}"
+    return f"SHORT {self.legs[0]} | LONG {str(self.legs[1])}"
 
   def __repr__(self) -> str:
     """Return a string representation of the OptionSpread"""

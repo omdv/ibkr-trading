@@ -7,23 +7,7 @@ from ib_async.util import df
 from models import OptionSpread, OptionWithSize
 from services.option_spread import OptionSpreadService
 from services.contract import ContractService
-from exchange_calendars import get_calendar
-
-
-def next_trading_day() -> str:
-  """
-  Get the next trading day
-  """
-  nyse = get_calendar("XNYS")
-  today = dt.datetime.now()
-
-  # Get the next trading day after today (regardless of market status)
-  next_trading_day = nyse.next_open(today.date() + dt.timedelta(days=1)).strftime(
-    "%Y%m%d"
-  )
-  logger.debug("Next trading day: {}", next_trading_day)
-
-  return next_trading_day
+from services.utilities import next_trading_day
 
 
 def need_to_open_spread(ibkr: IB, spreads: list[OptionSpread]):
@@ -96,7 +80,7 @@ def position_size(ibkr: IB) -> int:
   return int(position_size)
 
 
-def _short_leg_contract_to_open(ibkr: IB, expiry: str) -> Contract:
+def _short_leg_contract_to_open(ibkr: IB, expiry: str) -> tuple[Contract, float]:
   """
   Get the short leg contract
   TODO: Model Greeks vs Last Greeks?
@@ -143,7 +127,7 @@ def _short_leg_contract_to_open(ibkr: IB, expiry: str) -> Contract:
   short_contract = [e for e in puts if e.strike == strike][0]
 
   logger.debug("Target short contract: {}", short_contract)
-  return short_contract
+  return short_contract, contracts.iloc[-1].delta
 
 
 def _long_leg_contract_to_open(
@@ -176,17 +160,18 @@ def get_spread_to_open(ibkr: IB, spreads: list[OptionSpread]) -> OptionSpread:
   """
   Determine which spread to open
   """
-
   expiry = next_trading_day()
-  short_leg = _short_leg_contract_to_open(ibkr, expiry)
+  short_leg, short_delta = _short_leg_contract_to_open(ibkr, expiry)
   logger.debug("Short leg: {}", short_leg)
   long_leg = _long_leg_contract_to_open(ibkr, expiry, short_leg)
   logger.debug("Long leg: {}", long_leg)
 
   # assign size to the legs
   legs = [
-    OptionWithSize(position_size=-position_size(ibkr), option=short_leg),
-    OptionWithSize(position_size=+position_size(ibkr), option=long_leg),
+    OptionWithSize(
+      position_size=-position_size(ibkr), option=short_leg, delta=short_delta
+    ),
+    OptionWithSize(position_size=+position_size(ibkr), option=long_leg, delta=None),
   ]
   logger.debug("Legs: {}", legs)
 

@@ -95,14 +95,10 @@ class OptionSpreadService:
 
   def get_spread_delta(self) -> float:
     """
-    Get the delta for the spread
-    TODO: modelGreeks vs lastGreeks
+    Use the saved delta from the short leg
+    TODO: check if this is sufficient or needs to be refreshed
     """
-    short_contract = self.get_short_leg_contract()
-    self.ibkr.reqMktData(short_contract)
-    ticker = self.ibkr.reqTickers(short_contract)
-    self.ibkr.cancelMktData(short_contract)
-    return ticker[0].modelGreeks.delta
+    return self.spread.delta
 
   def trade_spread(self) -> Trade:
     """

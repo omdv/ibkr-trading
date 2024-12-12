@@ -9,6 +9,7 @@ from services.positions_parser import PositionsService
 from services.option_spread import OptionSpreadService
 from messaging.ntfy import MessageHandler
 from models.filled_trade import FilledTrade
+from services.utilities import is_market_open
 from .trading_logic import need_to_open_spread, get_spread_to_open
 
 
@@ -71,10 +72,16 @@ class TradingBot:
   def trade_loop(self):
     """
     Main trading loop
+    TODO: skip if no actions for today
     """
 
     # Create messaging bot
     status_bot = MessageHandler(self.config)
+
+    if not is_market_open(self.ibkr):
+      logger.info("Market is closed, skipping")
+      status_bot.send_notification("Market is closed, skipping")
+      return
 
     # Get existing option spreads
     positions_service = PositionsService(self.ibkr, self.positions)
@@ -106,7 +113,14 @@ class TradingBot:
     current_price = spread_service.get_current_price()
     logger.info("Current price of the target spread: {}", current_price)
     trade = spread_service.trade_spread()
+
     # Save the filled trade to the database
     if trade:
-      filled_trade = FilledTrade(contract, trade)
+      account_value = [
+        v
+        for v in self.ibkr.accountValues()
+        if v.tag == "NetLiquidationByCurrency" and v.currency == "BASE"
+      ]
+      net_value = float(account_value[0].value)
+      filled_trade = FilledTrade(contract, trade, net_value)
       filled_trade.save(self.db)
