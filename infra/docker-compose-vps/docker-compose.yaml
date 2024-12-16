@@ -28,6 +28,8 @@ services:
     environment:
       - IB_GATEWAY_HOST=ib-gateway
       - IB_GATEWAY_PORT=8888
+      - NTFY_ENABLED=${NTFY_ENABLED}
+      - NTFY_TOPIC=${NTFY_TOPIC}
     volumes:
       - ./downloads:/data
     restart: on-failure
@@ -43,9 +45,7 @@ services:
 
   watchtower:
     image: containrrr/watchtower:latest
-    environment:
-      - REPO_USER=${GH_USER}
-      - REPO_PASS=${GH_TOKEN}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - $HOME/.docker/config.json:/config.json
     command: --interval 300 --cleanup

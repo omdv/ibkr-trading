@@ -25,13 +25,6 @@ def setup_vps(config):
     "update-apt", connection=connection, create="sudo apt-get update -y"
   )
 
-  logger.info("Installing Tailscale")
-  install_tailscale = command.remote.Command(
-    "install-tailscale",
-    connection=connection,
-    create="curl -fsSL https://tailscale.com/install.sh | sh",
-  )
-
   logger.info("Installing Docker Compose")
   install_docker_compose = command.remote.Command(
     "install-docker-compose",
@@ -64,7 +57,6 @@ def setup_vps(config):
     opts=pulumi.ResourceOptions(
       depends_on=[
         install_docker_compose,
-        install_tailscale,
       ],
     ),
   )
