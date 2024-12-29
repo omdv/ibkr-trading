@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ib-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ib-gateway
+  template:
+    metadata:
+      labels:
+        app: ib-gateway
+    spec:
+      containers:
+        - name: ib-gateway
+          image: ghcr.io/extrange/ibkr:10.30
+          ports:
+            - containerPort: 6080
+              name: novnc
+            - containerPort: 8888
+              name: api
+          env:
+            - name: USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ibkr-secret
+                  key: username
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ibkr-secret
+                  key: password
+          envFrom:
+            - configMapRef:
+                name: ibkr-config
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1024Mi
+            limits:
+              cpu: 1000m
+              memory: 2048Mi

@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ibkr-config
+data:
+  TWOFA_TIMEOUT_ACTION: "restart"
+  GATEWAY_OR_TWS: "gateway"
+  IBC_TradingMode: "live"
+  IBC_ReadOnlyApi: "no"
+  IBC_ReloginAfterSecondFactorAuthenticationTimeout: "yes"
+  IBC_AutoRestartTime: "08:35 AM"

@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ib-gateway
+spec:
+  selector:
+    app: ib-gateway
+  ports:
+    - name: novnc
+      port: 6080
+      targetPort: 6080
+    - name: api
+      port: 8888
+      targetPort: 8888
