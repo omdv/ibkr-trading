@@ -1,0 +1,97 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ib-trading-job
+spec:
+  schedule: "10 9 * * *" # 9:10am server time
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: ib-trading-app
+        spec:
+          restartPolicy: Never
+          initContainers:
+            - name: volume-owner
+              image: busybox
+              command: ["sh", "-c", "chown -R 1000:1000 /data"]
+              volumeMounts:
+                - name: data-volume
+                  mountPath: /data
+          containers:
+            - name: ib-trading-app
+              image: ghcr.io/omdv/ib-trading-app:latest
+              imagePullPolicy: Always
+              envFrom:
+                - configMapRef:
+                    name: ibkr-app-config
+                - secretRef:
+                    name: ibkr-app-secret
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1024Mi
+                limits:
+                  cpu: 1000m
+                  memory: 2048Mi
+              volumeMounts:
+                - name: data-volume
+                  mountPath: /data
+          volumes:
+            - name: data-volume
+              persistentVolumeClaim:
+                claimName: pvc-ibkr-data
+          imagePullSecrets:
+            - name: ghcr-secret
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ib-prediction-job
+spec:
+  schedule: "0 9 * * *" # 9:00am server time
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: ib-prediction-app
+        spec:
+          restartPolicy: Never
+          initContainers:
+            - name: volume-owner
+              image: busybox
+              command: ["sh", "-c", "chown -R 1000:1000 /data"]
+              volumeMounts:
+                - name: data-volume
+                  mountPath: /data
+          containers:
+            - name: ib-prediction-app
+              image: ghcr.io/omdv/ib-trading-predictor:latest
+              imagePullPolicy: Always
+              envFrom:
+                - configMapRef:
+                    name: ibkr-app-config
+                - secretRef:
+                    name: ibkr-app-secret
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1024Mi
+                limits:
+                  cpu: 1000m
+                  memory: 2048Mi
+              volumeMounts:
+                - name: data-volume
+                  mountPath: /data
+          volumes:
+            - name: data-volume
+              persistentVolumeClaim:
+                claimName: pvc-ibkr-data
+          imagePullSecrets:
+            - name: ghcr-secret

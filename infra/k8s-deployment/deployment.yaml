@@ -25,12 +25,12 @@ spec:
             - name: USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: ibkr-secret
+                  name: ibkr-gateway-secret
                   key: username
             - name: PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: ibkr-secret
+                  name: ibkr-gateway-secret
                   key: password
           envFrom:
             - configMapRef:

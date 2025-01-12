@@ -4,5 +4,7 @@ kind: Kustomization
 resources:
   - configmap.yaml
   - deployment.yaml
+  - jobs.yaml
   - service.yaml
   - secrets.yaml
+  - volumes.yaml

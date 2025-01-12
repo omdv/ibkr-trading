@@ -10,3 +10,18 @@ data:
   IBC_ReadOnlyApi: "no"
   IBC_ReloginAfterSecondFactorAuthenticationTimeout: "yes"
   IBC_AutoRestartTime: "08:35 AM"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ibkr-app-config
+data:
+  IB_GATEWAY_HOST: "ib-gateway.ibkr.svc.cluster.local"
+  IB_GATEWAY_PORT: "8888"
+  STORAGE_PATH: "/data"
+  TRADING_MOCKED: "false"
+  TRADING_KELLY_RATIO: "0.22"
+  TRADING_CLOSE_FLAG: "true"
+  TRADING_CLOSE_TARGET_PROFIT_RATIO: "0.75"
+  TRADING_CLOSE_CHECK_INTERVAL: "60"
